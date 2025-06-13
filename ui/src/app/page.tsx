@@ -1,6 +1,6 @@
 "use client";
 
-import { Send, Github } from "lucide-react";
+import { Send, Github, SquarePen } from "lucide-react";
 import { useState } from "react";
 
 export default function Home() {
@@ -17,12 +17,19 @@ export default function Home() {
 
   return (
     <div className="flex flex-col h-screen bg-neutral-800">
-      {/* Top right GitHub link */}
-      <div className="absolute top-4 right-4 z-10 w-16 h-16 flex items-center justify-center">
+      {/* Top right buttons */}
+      <div className="absolute top-4 right-4 z-10 flex gap-2">
+        <button
+          aria-label="New Chat"
+          className="rounded-full p-3 text-neutral-400 hover:text-white hover:bg-neutral-700/50 focus:outline-none focus:ring-2 focus:ring-neutral-500 transition-colors"
+        >
+          <SquarePen className="h-6 w-6" />
+        </button>
         <a
-          href="https://github.com/mcnvr"
+          href="https://github.com/mcnvr/pv-curve-llm"
           target="_blank"
           rel="noopener noreferrer"
+          aria-label="GitHub Repository"
           className="rounded-full p-3 text-neutral-400 hover:text-white hover:bg-neutral-700/50 focus:outline-none focus:ring-2 focus:ring-neutral-500 transition-colors"
         >
           <Github className="h-6 w-6" />
