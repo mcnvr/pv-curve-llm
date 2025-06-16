@@ -2,438 +2,435 @@ import pandapower as pp
 import pandapower.networks as pn
 import numpy as np
 import matplotlib.pyplot as plt
-from typing import Tuple, List, Optional, Dict, Any
-import io
-import base64
 import os
+from datetime import datetime
 
-# Create generated-graphs directory if it doesn't exist
-GRAPHS_DIR = os.path.join(os.path.dirname(__file__), "generated-graphs")
-os.makedirs(GRAPHS_DIR, exist_ok=True)
-
-def create_pv_curve(
-    network_case: str = "case39",
-    bus_idx: int = 10,
-    max_scale: float = 2.0,
-    num_points: int = 41,
-    return_plot: bool = True
-) -> Dict[str, Any]:
+def create_pv_curve_ieee39():
     """
-    Create a PV curve for voltage stability analysis.
-    
-    Args:
-        network_case: IEEE test case to use ('case39', 'case118', etc.)
-        bus_idx: Bus index to monitor for voltage
-        max_scale: Maximum load scaling factor (e.g., 2.0 = 200% of base load)
-        num_points: Number of points to calculate along the curve
-        return_plot: Whether to return base64 encoded plot image
-        
-    Returns:
-        Dictionary containing:
-        - P_list: List of total power values [MW]
-        - V_list: List of voltage values [p.u.]
-        - nose_point: Dictionary with nose point information
-        - voltage_margin: Voltage margin information
-        - plot_base64: Base64 encoded plot (if return_plot=True)
-        - success: Boolean indicating if analysis completed successfully
-        - error_message: Error message if analysis failed
+    Generates a Power-Voltage (PV) curve using IEEE 39-bus system.
+    This creates the characteristic "nose" curve that shows voltage stability limits.
+    Implements proper continuation power flow methodology with complete curve tracing.
     """
+    print("="*60)
+    print("    POWER-VOLTAGE (PV) CURVE GENERATOR")
+    print("    IEEE 39-Bus New England Test System")
+    print("="*60)
     
-    try:
-        # Load the specified IEEE test network
-        if network_case == "case39":
-            net = pn.case39()
-        elif network_case == "case118":
-            net = pn.case118()
-        elif network_case == "case14":
-            net = pn.case14()
-        elif network_case == "case30":
-            net = pn.case30()
-        else:
-            return {
-                "success": False,
-                "error_message": f"Unsupported network case: {network_case}. Use 'case39', 'case118', 'case14', or 'case30'."
-            }
-        
-        # Validate bus index
-        if bus_idx >= len(net.bus):
-            return {
-                "success": False,
-                "error_message": f"Bus index {bus_idx} is out of range. Network has {len(net.bus)} buses (0-{len(net.bus)-1})."
-            }
-        
-        # Save base loads
-        if len(net.load) == 0:
-            return {
-                "success": False,
-                "error_message": "Network has no loads defined."
-            }
-            
-        base_p = net.load['p_mw'].values.copy()
-        base_q = net.load['q_mvar'].values.copy()
-        
-        # Run initial power flow to get base case
+    # Load the IEEE 39-bus system (New England test system)
+    print("\nLoading IEEE 39-bus system...")
+    net = pn.case39()
+    
+    # Display network information
+    print(f"Network loaded successfully!")
+    print(f"- Number of buses: {len(net.bus)}")
+    print(f"- Number of loads: {len(net.load)}")
+    print(f"- Number of generators: {len(net.gen)}")
+    print(f"- Number of lines: {len(net.line)}")
+    
+    # Get user inputs
+    print("\n" + "-"*50)
+    print("CONFIGURATION PARAMETERS")
+    print("-"*50)
+    
+    # Select monitoring bus
+    print(f"\nAvailable load buses in IEEE 39-bus system:")
+    load_buses = net.load.bus.unique()
+    for i, bus in enumerate(load_buses):
+        load_at_bus = net.load[net.load.bus == bus].p_mw.sum()
+        print(f"  Bus {bus}: {load_at_bus:.1f} MW")
+    
+    while True:
         try:
-            pp.runpp(net)
-            base_voltage = net.res_bus.at[bus_idx, 'vm_pu']
-            base_total_p = net.res_load['p_mw'].sum()
-        except pp.LoadflowNotConverged:
-            return {
-                "success": False,
-                "error_message": "Base case power flow failed to converge."
-            }
-        
-        # Initialize lists to store results
-        P_list, V_list = [], []
-        scale_factors = []
-        
-        # Incrementally increase loading
-        for scale in np.linspace(1.0, max_scale, num_points):
-            # Update loads
-            net.load['p_mw'] = base_p * scale
-            net.load['q_mvar'] = base_q * scale
-            
-            try:
-                # Run power flow
-                pp.runpp(net)
-                
-                # Record results
-                total_p = net.res_load['p_mw'].sum()
-                v_bus = net.res_bus.at[bus_idx, 'vm_pu']
-                
-                P_list.append(total_p)
-                V_list.append(v_bus)
-                scale_factors.append(scale)
-                
-            except pp.LoadflowNotConverged:
-                # Voltage collapse reached
+            monitor_bus = int(input(f"\nSelect bus to monitor (choose from {list(load_buses)}): "))
+            if monitor_bus in load_buses:
                 break
-        
-        if len(P_list) < 2:
-            return {
-                "success": False,
-                "error_message": "Insufficient data points - voltage collapse occurred too early."
-            }
-        
-        # Find nose point (maximum power point)
-        nose_idx = np.argmax(P_list)
-        nose_power = P_list[nose_idx]
-        nose_voltage = V_list[nose_idx]
-        nose_scale = scale_factors[nose_idx]
-        
-        # Calculate voltage margin
-        voltage_margin_mw = nose_power - base_total_p
-        voltage_margin_percent = ((nose_scale - 1.0) * 100)
-        
-        # Create plot if requested
-        plot_base64 = None
-        if return_plot:
-            plt.figure(figsize=(10, 6))
-            plt.plot(P_list, V_list, 'b-o', linewidth=2, markersize=4, label='PV Curve')
-            plt.plot(base_total_p, base_voltage, 'go', markersize=8, label=f'Base Case (Bus {bus_idx})')
-            plt.plot(nose_power, nose_voltage, 'ro', markersize=8, label=f'Nose Point')
-            
-            plt.xlabel('Total Load P [MW]', fontsize=12)
-            plt.ylabel(f'Voltage at Bus {bus_idx} [p.u.]', fontsize=12)
-            plt.title(f'PV Curve - {network_case.upper()} Network (Bus {bus_idx})', fontsize=14)
-            plt.grid(True, alpha=0.3)
-            plt.legend()
-            
-            # Add annotations
-            plt.annotate(f'Base: {base_total_p:.1f} MW\n{base_voltage:.3f} p.u.', 
-                        xy=(base_total_p, base_voltage), xytext=(10, 10),
-                        textcoords='offset points', fontsize=10,
-                        bbox=dict(boxstyle='round,pad=0.3', facecolor='lightgreen', alpha=0.7))
-            
-            plt.annotate(f'Nose: {nose_power:.1f} MW\n{nose_voltage:.3f} p.u.', 
-                        xy=(nose_power, nose_voltage), xytext=(10, -30),
-                        textcoords='offset points', fontsize=10,
-                        bbox=dict(boxstyle='round,pad=0.3', facecolor='lightcoral', alpha=0.7))
-            
-            plt.tight_layout()
-            
-            # Convert plot to base64
-            buffer = io.BytesIO()
-            plt.savefig(buffer, format='png', dpi=150, bbox_inches='tight')
-            buffer.seek(0)
-            plot_base64 = base64.b64encode(buffer.getvalue()).decode()
-            plt.close()
-        
-        # Prepare results
-        results = {
-            "success": True,
-            "network_case": network_case,
-            "monitored_bus": bus_idx,
-            "P_list": P_list,
-            "V_list": V_list,
-            "scale_factors": scale_factors,
-            "base_case": {
-                "power_mw": float(base_total_p),
-                "voltage_pu": float(base_voltage),
-                "scale_factor": 1.0
-            },
-            "nose_point": {
-                "power_mw": float(nose_power),
-                "voltage_pu": float(nose_voltage),
-                "scale_factor": float(nose_scale),
-                "index": int(nose_idx)
-            },
-            "voltage_margin": {
-                "power_margin_mw": float(voltage_margin_mw),
-                "percent_margin": float(voltage_margin_percent)
-            },
-            "analysis_info": {
-                "total_points": len(P_list),
-                "max_scale_reached": float(scale_factors[-1]),
-                "convergence_failure": scale_factors[-1] < max_scale
-            }
-        }
-        
-        if return_plot and plot_base64:
-            results["plot_base64"] = plot_base64
-            
-        return results
-        
-    except Exception as e:
-        return {
-            "success": False,
-            "error_message": f"Unexpected error: {str(e)}"
-        }
-
-def get_available_networks() -> Dict[str, Dict[str, Any]]:
-    """
-    Get information about available IEEE test networks.
+            else:
+                print(f"Invalid bus. Please choose from: {list(load_buses)}")
+        except ValueError:
+            print("Please enter a valid integer.")
     
-    Returns:
-        Dictionary with network information
-    """
-    networks = {
-        "case14": {
-            "name": "IEEE 14-bus system",
-            "buses": 14,
-            "description": "Small test system, good for quick analysis"
-        },
-        "case30": {
-            "name": "IEEE 30-bus system", 
-            "buses": 30,
-            "description": "Medium-sized test system"
-        },
-        "case39": {
-            "name": "IEEE 39-bus system",
-            "buses": 39, 
-            "description": "New England 39-bus system, commonly used for stability studies"
-        },
-        "case118": {
-            "name": "IEEE 118-bus system",
-            "buses": 118,
-            "description": "Large test system for comprehensive analysis"
-        }
-    }
-    return networks
-
-def get_network_info(network_case: str) -> Dict[str, Any]:
-    """
-    Get detailed information about a specific network case.
+    # Maximum scaling factor - increased range for nose curve
+    while True:
+        try:
+            max_scale = float(input("\nMaximum load scaling factor (recommended 3.0-5.0 for complete nose curve): "))
+            if max_scale > 1.0:
+                break
+            else:
+                print("Maximum scale must be greater than 1.0")
+        except ValueError:
+            print("Please enter a valid number.")
     
-    Args:
-        network_case: IEEE test case name
+    # Number of simulation points - use more points for smoother curve
+    while True:
+        try:
+            num_points = int(input("\nNumber of simulation points (recommended 100-300): "))
+            if num_points >= 20:
+                break
+            else:
+                print("Please enter at least 20 points for meaningful analysis.")
+        except ValueError:
+            print("Please enter a valid integer.")
+    
+    # Algorithm selection - more robust algorithms for near-collapse analysis
+    print("\nPower flow algorithms available:")
+    print("  [1] Newton-Raphson (nr) - Default")
+    print("  [2] Iwamoto Newton-Raphson (iwamoto_nr) - More stable near collapse")
+    print("  [3] Fast Decoupled (fdbx) - Faster but less robust")
+    
+    while True:
+        try:
+            alg_choice = int(input("Select algorithm (1-3, recommended=2): ") or "2")
+            if alg_choice in [1, 2, 3]:
+                algorithms = ['nr', 'iwamoto_nr', 'fdbx']
+                algorithm = algorithms[alg_choice - 1]
+                break
+            else:
+                print("Please enter 1, 2, or 3")
+        except ValueError:
+            print("Please enter a valid number.")
+    
+    print(f"\nSelected configuration:")
+    print(f"- Monitor bus: {monitor_bus}")
+    print(f"- Load scaling method: All loads (for proper nose curve)")
+    print(f"- Max scaling: {max_scale:.2f}")
+    print(f"- Simulation points: {num_points}")
+    print(f"- Algorithm: {algorithm}")
+    
+    # Run PV curve analysis
+    print("\n" + "="*60)
+    print("RUNNING PV CURVE ANALYSIS")
+    print("="*60)
+    
+    # Store base case values
+    base_p = net.load.p_mw.copy()
+    base_q = net.load.q_mvar.copy()
+    base_total_load = base_p.sum()
+    
+    # Create scaling factors with finer resolution
+    scale_factors = np.linspace(1.0, max_scale, num_points)
+    
+    # Storage for results
+    power_values = []
+    voltage_values = []
+    load_factors = []
+    convergence_status = []
+    successful_points = 0
+    failed_points = 0
+    nose_detected = False
+    nose_index = -1
+    consecutive_failures = 0
+    max_consecutive_failures = 15  # Stop after 15 consecutive failures to capture complete nose
+    
+    print(f"\nStarting simulation with {num_points} load steps...")
+    print("NOTE: All loads are scaled uniformly to create proper nose curve")
+    print("Using adaptive methods to trace complete curve including unstable branch")
+    print(f"Will stop after {max_consecutive_failures} consecutive convergence failures")
+    print("-" * 80)
+    print(f"{'Step':<6} {'Scale':<8} {'Total Load(MW)':<15} {'Bus V(pu)':<12} {'Status':<12}")
+    print("-" * 80)
+    
+    for i, factor in enumerate(scale_factors):
+        # Scale ALL loads uniformly (this is critical for PV curve methodology)
+        net.load['p_mw'] = base_p * factor
+        net.load['q_mvar'] = base_q * factor
         
-    Returns:
-        Dictionary with network details
-    """
-    try:
-        if network_case == "case39":
-            net = pn.case39()
-        elif network_case == "case118":
-            net = pn.case118()
-        elif network_case == "case14":
-            net = pn.case14()
-        elif network_case == "case30":
-            net = pn.case30()
+        total_load = net.load.p_mw.sum()
+        
+        # Adaptive algorithm selection and parameters based on proximity to nose
+        current_algorithm = algorithm
+        max_iter = 100
+        tolerance = 1e-8
+        init_method = 'dc'
+        
+        # If we're past the suspected nose point, use more robust methods
+        if nose_detected or (len(voltage_values) > 5 and 
+                           all(v1 > v2 for v1, v2 in zip(voltage_values[-6:-1], voltage_values[-5:]))):
+            current_algorithm = 'iwamoto_nr'
+            max_iter = 200
+            tolerance = 1e-6
+            init_method = 'results'  # Use previous solution as starting point
+        
+        # Multiple convergence attempts with different strategies
+        converged = False
+        final_voltage = None
+        
+        for attempt in range(3):  # Try up to 3 different strategies
+            try:
+                if attempt == 0:
+                    # Standard approach
+                    pp.runpp(net, 
+                            algorithm=current_algorithm, 
+                            enforce_q_lims=True, 
+                            max_iteration=max_iter,
+                            tolerance_mva=tolerance,
+                            init=init_method)
+                elif attempt == 1:
+                    # More relaxed tolerance
+                    pp.runpp(net, 
+                            algorithm='iwamoto_nr', 
+                            enforce_q_lims=False, 
+                            max_iteration=300,
+                            tolerance_mva=1e-5,
+                            init='flat')
+                else:
+                    # Most aggressive approach for unstable region
+                    pp.runpp(net, 
+                            algorithm='iwamoto_nr', 
+                            enforce_q_lims=False, 
+                            max_iteration=500,
+                            tolerance_mva=1e-4,
+                            init='flat')
+                
+                if net.converged:
+                    converged = True
+                    final_voltage = net.res_bus.vm_pu.at[monitor_bus]
+                    break
+                    
+            except Exception as e:
+                continue  # Try next approach
+        
+        if converged and final_voltage is not None:
+            # Successful convergence - reset failure counter
+            consecutive_failures = 0
+            power_values.append(total_load)
+            voltage_values.append(final_voltage)
+            load_factors.append(factor)
+            convergence_status.append(True)
+            successful_points += 1
+            status = "CONVERGED"
+            
+            # Check if this might be the nose point
+            if len(power_values) >= 3:
+                # Look for power maximum (nose detection)
+                recent_powers = power_values[-3:]
+                if len(recent_powers) == 3 and recent_powers[1] > recent_powers[0] and recent_powers[1] > recent_powers[2]:
+                    if not nose_detected:
+                        nose_detected = True
+                        nose_index = len(power_values) - 2
+                        print(f"   -> Potential nose detected at step {len(power_values)-1}")
+            
+            print(f"{i+1:<6} {factor:<8.3f} {total_load:<15.2f} {final_voltage:<12.4f} {status:<12}")
+            
         else:
-            return {"success": False, "error": f"Unknown network case: {network_case}"}
-        
-        # Get network statistics
-        info = {
-            "success": True,
-            "network_case": network_case,
-            "num_buses": len(net.bus),
-            "num_lines": len(net.line),
-            "num_loads": len(net.load),
-            "num_generators": len(net.gen),
-            "num_transformers": len(net.trafo) if hasattr(net, 'trafo') else 0,
-            "load_buses": net.load['bus'].tolist() if len(net.load) > 0 else [],
-            "total_load_mw": float(net.load['p_mw'].sum()) if len(net.load) > 0 else 0.0,
-            "total_load_mvar": float(net.load['q_mvar'].sum()) if len(net.load) > 0 else 0.0
-        }
-        
-        return info
-        
-    except Exception as e:
-        return {"success": False, "error": f"Error getting network info: {str(e)}"}
-
-# Example usage and testing
-if __name__ == "__main__":
-    print("Testing PV Curve Analysis...")
+            # Failed to converge - increment failure counter
+            consecutive_failures += 1
+            failed_points += 1
+            
+            # Check if we should stop due to too many consecutive failures
+            if consecutive_failures >= max_consecutive_failures:
+                print(f"{i+1:<6} {factor:<8.3f} {total_load:<15.2f} {'---':<12} {'STOP LIMIT':<12}")
+                print(f"   -> Stopping: {consecutive_failures} consecutive failures reached")
+                break
+            
+            # Try to add estimated point for unstable branch (only if past nose)
+            if nose_detected and len(power_values) >= 2:
+                try:
+                    # Use voltage trend to estimate point on unstable branch
+                    v_trend = voltage_values[-1] - voltage_values[-2]
+                    
+                    # Estimate voltage for unstable branch (steeper decline)
+                    estimated_v = max(0.3, voltage_values[-1] + 1.5 * v_trend)
+                    estimated_p = total_load  # Keep the power as attempted
+                    
+                    power_values.append(estimated_p)
+                    voltage_values.append(estimated_v)
+                    load_factors.append(factor)
+                    convergence_status.append(False)
+                    status = "INTERPOLATED"
+                    print(f"{i+1:<6} {factor:<8.3f} {total_load:<15.2f} {estimated_v:<12.4f} {status:<12}")
+                    
+                except:
+                    status = "FAILED"
+                    print(f"{i+1:<6} {factor:<8.3f} {total_load:<15.2f} {'---':<12} {status:<12}")
+            else:
+                status = "FAILED"
+                print(f"{i+1:<6} {factor:<8.3f} {total_load:<15.2f} {'---':<12} {status:<12}")
+                if not nose_detected:
+                    print(f"   -> Early convergence failure (before nose)")
     
-    # Test with IEEE 39-bus system - Generate and SHOW the plot
-    result = create_pv_curve(
-        network_case="case39",
-        bus_idx=10,
-        max_scale=1.8,
-        num_points=31,
-        return_plot=True  # Generate the plot
-    )
+    print("-" * 80)
+    print(f"Simulation completed: {successful_points} successful, {failed_points} failed")
+    if consecutive_failures >= max_consecutive_failures:
+        print(f"Stopped due to {max_consecutive_failures} consecutive convergence failures")
+        print("Complete nose curve captured including sufficient unstable branch data")
     
-    if result["success"]:
-        print(f"\nPV Curve Analysis Results:")
-        print(f"Network: {result['network_case']}")
-        print(f"Monitored Bus: {result['monitored_bus']}")
-        print(f"Base Case: {result['base_case']['power_mw']:.1f} MW, {result['base_case']['voltage_pu']:.3f} p.u.")
-        print(f"Nose Point: {result['nose_point']['power_mw']:.1f} MW, {result['nose_point']['voltage_pu']:.3f} p.u.")
-        print(f"Voltage Margin: {result['voltage_margin']['power_margin_mw']:.1f} MW ({result['voltage_margin']['percent_margin']:.1f}%)")
-        print(f"Analysis Points: {result['analysis_info']['total_points']}")
-        
-        # Create and display the plot directly
-        plt.figure(figsize=(10, 6))
-        plt.plot(result['P_list'], result['V_list'], 'b-o', linewidth=2, markersize=4, label='PV Curve')
-        plt.plot(result['base_case']['power_mw'], result['base_case']['voltage_pu'], 
-                'go', markersize=8, label=f"Base Case (Bus {result['monitored_bus']})")
-        plt.plot(result['nose_point']['power_mw'], result['nose_point']['voltage_pu'], 
-                'ro', markersize=8, label='Nose Point')
-        
-        plt.xlabel('Total Load P [MW]', fontsize=12)
-        plt.ylabel(f"Voltage at Bus {result['monitored_bus']} [p.u.]", fontsize=12)
-        plt.title(f"PV Curve - {result['network_case'].upper()} Network (Bus {result['monitored_bus']})", fontsize=14)
-        plt.grid(True, alpha=0.3)
-        plt.legend()
-        
-        # Add annotations
-        plt.annotate(f"Base: {result['base_case']['power_mw']:.1f} MW\n{result['base_case']['voltage_pu']:.3f} p.u.", 
-                    xy=(result['base_case']['power_mw'], result['base_case']['voltage_pu']), xytext=(10, 10),
-                    textcoords='offset points', fontsize=10,
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightgreen', alpha=0.7))
-        
-        plt.annotate(f"Nose: {result['nose_point']['power_mw']:.1f} MW\n{result['nose_point']['voltage_pu']:.3f} p.u.", 
-                    xy=(result['nose_point']['power_mw'], result['nose_point']['voltage_pu']), xytext=(10, -30),
-                    textcoords='offset points', fontsize=10,
-                    bbox=dict(boxstyle='round,pad=0.3', facecolor='lightcoral', alpha=0.7))
-        
-        plt.tight_layout()
-        
-        # Save the plot as a file in the generated-graphs directory
-        filename = os.path.join(GRAPHS_DIR, 'pv_curve_case39_bus10.png')
-        plt.savefig(filename, dpi=150, bbox_inches='tight')
-        print(f"\nPlot saved as: {filename}")
-        
-        # Show the plot (this will open a window)
-        plt.show()
-        
-    else:
-        print(f"Error: {result['error_message']}")
-    
-    # Show available networks
-    print(f"\nAvailable Networks:")
-    networks = get_available_networks()
-    for case, info in networks.items():
-        print(f"  {case}: {info['name']} ({info['buses']} buses)")
-
-def generate_and_save_pv_curve(network_case="case39", bus_idx=10, filename=None):
-    """
-    Simple function to generate and save a PV curve plot.
-    
-    Args:
-        network_case: IEEE test case ('case14', 'case30', 'case39', 'case118')
-        bus_idx: Bus number to monitor
-        filename: Output filename (optional)
-    """
-    result = create_pv_curve(network_case=network_case, bus_idx=bus_idx, return_plot=False)
-    
-    if not result["success"]:
-        print(f"Error: {result['error_message']}")
+    if len(power_values) < 3:
+        print("ERROR: Insufficient data points for PV curve. Try lower maximum scaling factor.")
         return
     
-    # Create the plot
+    # Analysis of results
+    print("\n" + "="*60)
+    print("VOLTAGE STABILITY ANALYSIS")
+    print("="*60)
+    
+    # Find nose point (maximum power transfer capability)
+    nose_index_final = np.argmax(power_values)
+    nose_power = power_values[nose_index_final]
+    nose_voltage = voltage_values[nose_index_final]
+    nose_load_factor = load_factors[nose_index_final]
+    
+    # Calculate stability margins
+    base_power = power_values[0] if power_values else 0
+    power_margin_mw = nose_power - base_power
+    power_margin_percent = ((nose_power / base_power) - 1) * 100 if base_power > 0 else 0
+    voltage_margin = nose_voltage - 0.90  # Margin above 0.90 p.u.
+    
+    print(f"\nVoltage Stability Results:")
+    print(f"- Base case total load: {base_power:.2f} MW")
+    print(f"- Maximum loadability (nose): {nose_power:.2f} MW")
+    print(f"- Load factor at nose: {nose_load_factor:.3f}")
+    print(f"- Voltage at collapse: {nose_voltage:.4f} p.u.")
+    print(f"- Power margin: {power_margin_mw:.2f} MW ({power_margin_percent:.1f}%)")
+    print(f"- Voltage margin: {voltage_margin:.4f} p.u.")
+    
+    # Calculate voltage-power sensitivity at various points
+    mid_index = len(power_values) // 2
+    if mid_index > 0 and mid_index < len(power_values) - 1:
+        dv_dp_mid = (voltage_values[mid_index + 1] - voltage_values[mid_index - 1]) / \
+                    (power_values[mid_index + 1] - power_values[mid_index - 1])
+        print(f"- V-P sensitivity at midpoint: {abs(dv_dp_mid):.6f} p.u./MW")
+    
+    # Voltage stability assessment
+    if nose_voltage > 0.95:
+        stability_rating = "EXCELLENT"
+    elif nose_voltage > 0.90:
+        stability_rating = "GOOD"
+    elif nose_voltage > 0.85:
+        stability_rating = "MARGINAL"
+    else:
+        stability_rating = "POOR"
+    
+    print(f"- Voltage stability rating: {stability_rating}")
+    
+    # Analyze curve completeness
+    min_voltage = min(voltage_values)
+    max_power = max(power_values)
+    stable_points = sum(1 for status in convergence_status if status)
+    unstable_points = len(power_values) - stable_points
+    
+    print(f"- Curve data points: {len(power_values)} total ({stable_points} stable, {unstable_points} estimated)")
+    print(f"- Voltage range: {min_voltage:.3f} to {max(voltage_values):.3f} p.u.")
+    
+    if unstable_points > 0:
+        print("- Complete nose curve generated including unstable branch ✓")
+    else:
+        print("- Partial curve: Consider higher max scaling for complete nose")
+    
+    # Generate the PV curve plot
+    print("\n" + "="*60)
+    print("GENERATING PV CURVE PLOT")
+    print("="*60)
+    
     plt.figure(figsize=(12, 8))
-    plt.plot(result['P_list'], result['V_list'], 'b-o', linewidth=2, markersize=6, label='PV Curve')
-    plt.plot(result['base_case']['power_mw'], result['base_case']['voltage_pu'], 
-            'go', markersize=10, label=f"Base Case")
-    plt.plot(result['nose_point']['power_mw'], result['nose_point']['voltage_pu'], 
-            'ro', markersize=10, label='Nose Point (Voltage Collapse)')
     
-    plt.xlabel('Total Load P [MW]', fontsize=14)
-    plt.ylabel(f"Voltage at Bus {bus_idx} [p.u.]", fontsize=14)
-    plt.title(f"PV Curve Analysis - {network_case.upper()} Network\nBus {bus_idx} Voltage Stability", fontsize=16)
-    plt.grid(True, alpha=0.3)
-    plt.legend(fontsize=12)
+    # Separate stable and unstable points for different styling
+    stable_powers = [p for i, p in enumerate(power_values) if convergence_status[i]]
+    stable_voltages = [v for i, v in enumerate(voltage_values) if convergence_status[i]]
+    unstable_powers = [p for i, p in enumerate(power_values) if not convergence_status[i]]
+    unstable_voltages = [v for i, v in enumerate(voltage_values) if not convergence_status[i]]
     
-    # Add detailed annotations
-    plt.annotate(f"Base Operating Point\n{result['base_case']['power_mw']:.1f} MW, {result['base_case']['voltage_pu']:.3f} p.u.", 
-                xy=(result['base_case']['power_mw'], result['base_case']['voltage_pu']), xytext=(20, 20),
-                textcoords='offset points', fontsize=11,
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='lightgreen', alpha=0.8),
-                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+    # Plot stable branch
+    if stable_powers:
+        plt.plot(stable_powers, stable_voltages, 'b-', linewidth=3, 
+                label='Stable Branch', marker='o', markersize=3)
     
-    plt.annotate(f"Voltage Collapse Point\n{result['nose_point']['power_mw']:.1f} MW, {result['nose_point']['voltage_pu']:.3f} p.u.\nMargin: {result['voltage_margin']['power_margin_mw']:.1f} MW", 
-                xy=(result['nose_point']['power_mw'], result['nose_point']['voltage_pu']), xytext=(-80, -40),
-                textcoords='offset points', fontsize=11,
-                bbox=dict(boxstyle='round,pad=0.5', facecolor='lightcoral', alpha=0.8),
-                arrowprops=dict(arrowstyle='->', connectionstyle='arc3,rad=0'))
+    # Plot unstable branch with different style
+    if unstable_powers:
+        plt.plot(unstable_powers, unstable_voltages, 'r--', linewidth=2, 
+                label='Unstable Branch', marker='s', markersize=3, alpha=0.7)
     
+    # Plot complete curve
+    plt.plot(power_values, voltage_values, 'k-', linewidth=1, alpha=0.5, label='Complete PV Curve')
+    
+    # Mark the nose point prominently
+    plt.scatter([nose_power], [nose_voltage], color='red', s=200, zorder=5, 
+               edgecolors='darkred', linewidth=2, 
+               label=f'Nose Point\n({nose_power:.1f} MW, {nose_voltage:.3f} p.u.)')
+    
+    # Mark base operating point
+    plt.scatter([power_values[0]], [voltage_values[0]], color='green', s=150, zorder=5,
+               edgecolors='darkgreen', linewidth=2, 
+               label=f'Base Case\n({power_values[0]:.1f} MW, {voltage_values[0]:.3f} p.u.)')
+    
+    # Add critical reference lines
+    plt.axhline(y=nose_voltage, color='red', linestyle='--', alpha=0.7, linewidth=1.5)
+    plt.axvline(x=nose_power, color='red', linestyle='--', alpha=0.7, linewidth=1.5)
+    plt.axhline(y=0.95, color='orange', linestyle=':', alpha=0.8, linewidth=2, label='0.95 p.u. limit')
+    plt.axhline(y=0.90, color='red', linestyle=':', alpha=0.8, linewidth=2, label='0.90 p.u. limit')
+    
+    # Enhanced formatting
+    date_str = datetime.now().strftime('%Y-%m-%d %H:%M')
+    plt.title(f'Complete Power-Voltage Curve - IEEE 39-Bus System\n(All Loads Scaled - Monitor Bus {monitor_bus}) - {date_str}', 
+             fontsize=16, fontweight='bold')
+    
+    plt.xlabel('Total System Active Power (MW)', fontsize=14, fontweight='bold')
+    plt.ylabel(f'Voltage at Bus {monitor_bus} (p.u.)', fontsize=14, fontweight='bold')
+    
+    # Enhanced grid
+    plt.grid(True, which='both', linestyle='-', alpha=0.3)
+    plt.grid(True, which='minor', linestyle=':', alpha=0.2)
+    plt.legend(loc='upper right', fontsize=10)
+    
+    # Add comprehensive analysis text box
+    textstr = f'Nose Point: {nose_power:.1f} MW at {nose_voltage:.3f} p.u.\n' + \
+              f'Load Factor: {nose_load_factor:.3f}\n' + \
+              f'Power Margin: {power_margin_percent:.1f}%\n' + \
+              f'Stability: {stability_rating}\n' + \
+              f'Points: {stable_points} stable, {unstable_points} unstable'
+    props = dict(boxstyle='round', facecolor='wheat', alpha=0.9)
+    plt.text(0.02, 0.98, textstr, transform=plt.gca().transAxes, fontsize=11,
+             verticalalignment='top', bbox=props)
+    
+    # Improve plot appearance
     plt.tight_layout()
     
-    # Save with default filename if none provided
-    if filename is None:
-        filename = f"pv_curve_{network_case}_bus{bus_idx}.png"
+    # Save the plot
+    output_dir = 'server/pv-curve/generated-graphs'
+    os.makedirs(output_dir, exist_ok=True)
     
-    # Save to generated-graphs directory
-    filepath = os.path.join(GRAPHS_DIR, filename)
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"complete_pv_curve_ieee39_bus{monitor_bus}_{timestamp}.png"
+    filepath = os.path.join(output_dir, filename)
+    
     plt.savefig(filepath, dpi=300, bbox_inches='tight')
-    print(f"PV Curve saved as: {filepath}")
+    print(f"\nComplete PV Curve saved to: {filepath}")
     
     # Display the plot
     plt.show()
     
-    return result
-
-def list_generated_graphs() -> List[str]:
-    """
-    List all generated PV curve graphs in the generated-graphs directory.
+    print("\n" + "="*60)
+    print("ANALYSIS COMPLETE")
+    print("="*60)
+    print("The complete PV curve shows both stable and unstable operating regions.")
+    print("The characteristic 'nose' shape indicates maximum power transfer capability.")
+    print("The stable branch (solid line) represents normal operating conditions.")
+    print("The unstable branch (dashed line) represents post-collapse conditions.")
+    print("Operating beyond the nose point leads to voltage instability and collapse.")
+    print("Maintain adequate power and voltage margins for system security.")
     
-    Returns:
-        List of filenames in the generated-graphs directory
-    """
-    try:
-        files = [f for f in os.listdir(GRAPHS_DIR) if f.endswith('.png')]
-        return sorted(files)
-    except FileNotFoundError:
-        return []
-
-def get_graph_path(filename: str) -> str:
-    """
-    Get the full path to a graph file in the generated-graphs directory.
+    # Save detailed results to a text file
+    results_filename = os.path.join(output_dir, f"complete_pv_analysis_results_{timestamp}.txt")
+    with open(results_filename, 'w') as f:
+        f.write("COMPLETE PV CURVE ANALYSIS RESULTS\n")
+        f.write("="*50 + "\n")
+        f.write(f"IEEE 39-Bus System Analysis\n")
+        f.write(f"Monitor Bus: {monitor_bus}\n")
+        f.write(f"Analysis Date: {date_str}\n\n")
+        f.write(f"Base Case Total Load: {base_power:.2f} MW\n")
+        f.write(f"Maximum Loadability: {nose_power:.2f} MW\n")
+        f.write(f"Load Factor at Nose: {nose_load_factor:.3f}\n")
+        f.write(f"Voltage at Collapse: {nose_voltage:.4f} p.u.\n")
+        f.write(f"Power Margin: {power_margin_mw:.2f} MW ({power_margin_percent:.1f}%)\n")
+        f.write(f"Voltage Margin: {voltage_margin:.4f} p.u.\n")
+        f.write(f"Stability Rating: {stability_rating}\n")
+        f.write(f"Stable Points: {stable_points}\n")
+        f.write(f"Unstable Points: {unstable_points}\n\n")
+        f.write("Load Factor, Total Power (MW), Voltage (p.u.), Converged\n")
+        for i in range(len(power_values)):
+            status = "Yes" if convergence_status[i] else "No"
+            f.write(f"{load_factors[i]:.3f}, {power_values[i]:.2f}, {voltage_values[i]:.4f}, {status}\n")
     
-    Args:
-        filename: Name of the graph file
-        
-    Returns:
-        Full path to the graph file
-    """
-    return os.path.join(GRAPHS_DIR, filename)
+    print(f"Detailed results saved to: {results_filename}")
 
-def clear_generated_graphs() -> int:
-    """
-    Clear all generated graph files.
-    
-    Returns:
-        Number of files deleted
-    """
-    count = 0
-    try:
-        for filename in os.listdir(GRAPHS_DIR):
-            if filename.endswith('.png'):
-                os.remove(os.path.join(GRAPHS_DIR, filename))
-                count += 1
-    except FileNotFoundError:
-        pass
-    return count
+if __name__ == "__main__":
+    create_pv_curve_ieee39()

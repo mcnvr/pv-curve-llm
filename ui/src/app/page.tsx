@@ -43,7 +43,7 @@ export default function Home() {
             Create a PV-Curve
           </h1>
           <p className="text-neutral-400 text-lg">
-            Describe what you need for your PV-Curve
+            Conduct PV-Curve Volatage Stability Analysis with Natural Language
           </p>
         </div>
       </div>
