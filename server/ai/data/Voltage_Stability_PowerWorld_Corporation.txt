@@ -1,0 +1,243 @@
+Voltage Stability: The ability to maintain system
+voltage so that both power and voltage are
+controllable. System voltage responds as expected
+(i.e., an increase in load causes proportional
+decrease in voltage).
+
+Voltage Instability: Inability to maintain system
+voltage. System voltage and/or power become
+uncontrollable. System voltage does not respond
+as expected.
+
+Voltage Collapse: Process by which voltage
+instability leads to unacceptably low voltages in a
+significant portion of the system. Typically results
+in loss of system load.
+
+Classified by either size of disturbance or duration
+– Small or large disturbance: small disturbance is just
+perturbations about an equilibrium point (power flow)
+– Short-term (several seconds) or long-term (many
+seconds to minutes)
+
+Small Disturbance Voltage Stability
+• Small disturbance voltage stability can be assessed
+using a power flow (maximum loadability)
+• Depending on the assumed load model, the power
+flow can have multiple (or now solutions)
+• PV curve is created by plotting power versus
+voltage
+
+Two-Bus System Example
+Consider a simple two-bus system where:
+• Bus 1 is the slack bus with voltage V_slack = 1.0
+• Bus 2 is the load bus with voltage V∠0
+• Line reactance X = 0.2 between the buses
+• Line susceptance B = -10
+The power flow equations for this system are:
+P_L - BV sin θ = 0
+Q_L + BV cos θ - BV² = 0
+Where:
+• B is the line susceptance = -10
+• V∠0 is the load voltage
+• θ is the phase angle difference between buses
+• P_L is the active power load
+• Q_L is the reactive power load
+This simple system can be used to demonstrate voltage stability concepts and the development of PV curves through systematic analysis of load variations.
+
+Small Disturbance Voltage
+Stability
+• Question: how do the power flow solutions vary as
+the load is changed?
+• A Solution: Calculate a series of power flow
+solutions for various load levels and see how they
+change
+• Power flow Jacobian
+
+The Jacobian matrix for the two-bus system is:
+J(θ,V) = [[-BV cos θ,     -B sin θ    ]
+          [-BV sin θ,  B cos θ - 2BV]]
+The determinant of the Jacobian matrix is:
+det J(θ,V) = VB² (2V cos θ - cos² θ - sin² θ)
+The system becomes singular when:
+(2V cos θ - 1) = 0
+This singularity condition indicates the point of voltage collapse, where the power flow Jacobian becomes non-invertible and the system loses voltage controllability.
+
+Maximum Loadability When
+Power Flow Jacobian is Singular
+• An important paper considering this was by Sauer
+and Pai from IEEE Trans. Power Systems in Nov
+1990, “Power system steady-state stability and the
+load-flow Jacobian”
+• Other earlier papers were looking at the
+characteristics of multiple power flow solutions
+• Work with the power flow optimal multiplier
+around the same time had shown that optimal
+multiplier goes to zero as the power flow Jacobian
+becomes singular
+• The power flow Jacobian depends on the assumed
+load model
+
+Relationship Between Stability and Power Flow Jacobian
+• The Sauer/Pai paper related system stability to
+the power flow Jacobian by noting the system
+dynamics could be written as a set of
+differential algebraic equations
+The system dynamics can be expressed as:
+ẋ = f(x, y, p)
+0 = g(x, y, p)
+Linearizing about an equilibrium gives:
+[Δẋ]   [∂f/∂x  ∂f/∂y] [Δx]
+[0 ] = [∂g/∂x  ∂g/∂y] [Δy]
+What Sauer and Pai show is if ∂g/∂y is singular then the system is unstable; if ∂g/∂y is nonsingular then the system may or may not be stable. Hence it provides an upper bound on stability.
+
+Relationship Between Stability
+and Power Flow Jacobian
+Assuming ∂g/∂y is nonsingular then:
+Δẋ = [∂f/∂x - ∂f/∂y[∂g/∂y]^(-1)∂g/∂x] Δx
+What Sauer and Pai show is if ∂g/ ∂ y is
+singular then the system is unstable; if ∂g/ ∂ y
+is nonsingular then the system may or may
+not be stable
+• Hence it provides an upper bound on stability
+
+Bifurcations
+• In general, bifurcation is the division of something
+into two branches or parts
+• For a dynamic system, a bifurcation occurs when
+small changes in a parameter cause a new quality of
+motion of the dynamic system
+• Two types of bifurcation are considered for voltage
+stability
+– Saddle node bifurcation is the disappearance of an
+equilibrium point for parameter variation; for voltage
+stability it is two power flow solutions coalescing with
+parameter variation
+– Hopf bifurcation is cause by two eigenvalues crossing
+into the right-half plane
+
+PV and QV Curves
+• PV curves can be traced by plotting the
+voltage as the real power is increased; QV
+curves as reactive power is increased
+– At least for the upper portion of the curve
+
+Small Disturbance Voltage
+Collapse
+• At constant frequency (e.g., 60 Hz) the complex
+power transferred down a transmission line is S=VI*
+– V is phasor voltage, I is phasor current
+– This is the reason for using a high voltage grid
+• Line real power losses are given by RI^2 and reactive
+power losses by XI^2
+– R is the line’s resistance, and X its reactance; for a high
+voltage line X >> R
+• Increased reactive power tends to drive down the
+voltage, which increases the current, which further
+increases the reactive power losses
+
+Load Parameter Space
+Representation
+• With a constant power model there is a maximum
+loadability surface, S
+– Defined as point in which the power flow Jacobian is
+singular
+– For the lossless two bus system it can be determined
+as
+P_L²/B + Q_L + 1/4 B = 0
+
+Load Model Impact
+• With a static load model regardless of the voltage
+dependency the same PV curve is traced
+– But whether a point of maximum loadability exists
+depends on the assumed load model
+• If voltage exponent is > 1 then multiple solutions do not exist
+(see B.C. Lesieutre, P.W. Sauer and M.A. Pai “Sufficient
+conditions on static load models for network solvability,”NAPS
+1992, pp. 262-271)
+
+Application: Conservation Voltage Reduction (CVR)
+• If the “steady-state” load has a true dependence on
+voltage, then a change (usually a reduction) in the
+voltage should result in a total decrease in energy
+consumption
+• If an “optimal” voltage could be determined, then
+this could result in a net energy savings
+• Some challenges are 1) the voltage profile across a
+feeder is not constant, 2) the load composition is
+constantly changing, 3) a decrease in power
+consumption might result in a decrease in useable
+output from the load, and 4) loads are dynamic and
+an initial increase might be balanced by a later
+increase
+
+Determining a Metric to VoltageCollapse
+• The goal of much of the voltage stability work was to
+determine an easy to calculate metric (or metrics) of
+the current operating point to voltage collapse
+– PV and QV curves (or some combination) can determine
+such a metric along a particular path
+– Goal was to have a path independent metric. The closest
+boundary point was considered,
+but this could be quite misleading
+if the system was not going to
+move in that direction
+– Any linearization about the current operating point (i.e.,
+the Jacobian) does not consider important nonlinearities
+like generators hitting their reactive power limits
+
+Assessing Voltage Margin Using PV and QV Curve Analysis
+• A common method for assessing the distance
+in parameter space to voltage instability (or an
+undesirable voltage profile) is to trace how the
+voltage magnitudes vary as the system
+parameters (such as the loads) are changed in
+a specified direction
+– If the direction involves changing the real power
+(P) this is known as a PV curve; if the change is
+with the reactive power (Q) then this is a QV curve
+• PV/QV curve analysis can be generalized to
+any parameter change, and can include the
+consideration of contingencies
+
+PV and QV Analysis in PowerWorld
+• Requires setting up what is known in PowerWorld
+as an injection group
+– An injection group specifies a set of objects, such as
+generators and loads, that can inject or absorb power
+– Injection groups can be defined by selecting Case
+Information, Aggregation, Injection Groups
+• The PV and/or QV analysis then varies the
+injections in the injection group, tracing out the PV
+curve
+• This allows optional consideration of contingencies
+• The PV tool can be displayed by selecting Add-Ons,
+PV
+
+Shorter Term Dynamics
+• On a shorter time-scale (minutes down to
+seconds) voltage stability is impacted by
+controls hitting limits (such as the action of
+generator over excitation limiters), the
+movement of voltage control devices (such as
+LTC transformers) and load dynamics
+– Motor stalling can have a major impact
+• The potential for voltage
+instability can be quantified
+by looking at the amount
+and duration of voltage
+dips following an event
+
+Fault Induced Delayed Voltage Recovery (FIDVR)
+• FIDVR is a situation in which the system
+voltage remains significantly reduced for at
+least several seconds following a fault (at
+either the transmission or distribution level)
+– It is most concerning in the high voltage grid, but
+found to be unexpectedly prevalent in the
+distribution system
+• Stalled residential air
+conditioning units are a
+key cause of FIDVR – they can stall within the
+three cycles needed to
+clear a fault

@@ -1,4 +1,4 @@
-Resources to break up:
+(Potential) Resources to break up:
 https://resources.pcb.cadence.com/blog/2024-voltage-stability-in-power-systems-key-concepts-and-analyses
 https://www.powerworld.com/files/S06PVCurves.pdf
 https://www.ijrte.org/wp-content/uploads/papers/v8i3/C6227098319.pdf
@@ -6,3 +6,5 @@ https://books.google.com/books?id=eCsIGxp2KlsC&pg=PA93#v=onepage&q&f=false
 https://books.google.com/books?id=wZv92UdKxi4C&pg=PT384#v=onepage&q&f=false
 https://books.google.com/books?id=MQu7IqoLrfYC&pg=PA106#v=onepage&q&f=false
 https://books.google.com/books?id=CdQnEAAAQBAJ&pg=PA32#v=onepage&q&f=false
+https://www.powerworld.com/files/D14VoltageStability.pdf\
+https://blog.oureducation.in/pv-curves-for-voltage-stability-assesment/

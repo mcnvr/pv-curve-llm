@@ -1,9 +1,8 @@
 from langchain_ollama import OllamaEmbeddings
 from langchain_chroma import Chroma
 from langchain_core.documents import Document
-from pypdf import PdfReader
 import os
-import pandas as pd
+import glob
 import shutil
 
 embeddings = OllamaEmbeddings(model="mxbai-embed-large")
@@ -18,7 +17,7 @@ if os.path.exists(db_location):
         print("Deleting existing database...")
         shutil.rmtree(db_location)
         add_documents = True
-        print("✓ Existing database deleted")
+        print("Existing database deleted")
     else:
         print("Using existing database")
         add_documents = False
@@ -27,18 +26,27 @@ if add_documents:
     documents = []
     ids = []
 
-    print("Processing PDF...")
-    reader = PdfReader("pv_curve_notes.pdf")
-    text = ""
-    for page in reader.pages:
-        text += page.extract_text()
+    print("Processing text files from ./data/ directory...")
+    txt_files = glob.glob("./data/*.txt")
+    print(f"Found {len(txt_files)} text files")
     
-    lines = text.split("\n")
-    for i in range(0, len(lines), 8):
-        section = "\n".join(lines[i:i+8])
-        if section.strip():
-            documents.append(Document(page_content=section.strip()))
-            ids.append(f"{i//8}")
+    for file_path in txt_files:
+        filename = os.path.basename(file_path)
+        print(f"Processing {filename}...")
+        
+        with open(file_path, 'r', encoding='utf-8') as file:
+            text = file.read()
+        
+        chunks = text.split('\n\n')
+        
+        for i, chunk in enumerate(chunks):
+            if chunk.strip():
+                documents.append(Document(page_content=chunk.strip()))
+                ids.append(f"{filename}_{i}")
+        
+        print(f"✓ Added {len([c for c in chunks if c.strip()])} chunks from {filename}")
+    
+    print(f"Total documents created: {len(documents)}")
     
 vector_store = Chroma(
     collection_name="pv_curve_notes",
@@ -50,6 +58,7 @@ if add_documents:
     vector_store.add_documents(documents=documents, ids=ids)
     print(f"Added {len(documents)} documents to vector database")
 
+# k: number of documents to retrieve from the vector database
 retriever = vector_store.as_retriever(
-    search_kwargs={"k": 10}
+    search_kwargs={"k": 14}
 )

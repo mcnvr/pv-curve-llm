@@ -1,0 +1,26 @@
+PV CURVES:
+PV curves are the most widely used curves and it requires proper technique to avoid numerical instability
+PV CURVES FOR VOLTAGE STABILITY ASSESMENT
+In a large systems a closed form expression is not possible in such type of cases power flow equations are solved numerically for each operating point.
+
+Intersection of load characteristic and network  characteristic is an operating point of a power system .An operating point can be obtained as long as there is a point of intersection between two curves. Let us consider a contingency which results in a new network PV curve due to which the system moves from point “a” to point”b”which corresponds  to the short term characteristic load. For long term characteristic load the power restoring devices act on the system and gives the final operating point “c”. in this figure the vertical line ac is the long term load characteristic. The intersection of line implies that the system is able to restore power at steady state. Constant power characteristic of load is assumed in steady state analysis which is the most restrictive assumption.Let us consider the outage of another devices from the system at the point “c” for which we have smaller PV curves and the new point of intersection between is “d”. here there is no intersection between the load  and network curves in the long run.
+
+EFFECT OF LOAD MODEL:
+Load is considered as an important factor of voltage stability. The characteristic of load governs the dynamic evolution of voltage instability. For different load model the point of voltage collapse is different. The load model includes slow and fast acting loads,and the load model attributes to the fact that  the power system has the capacity to restore its voltage leval to some of the devices. The power restoration can be fast in case of induction motor and high voltage direct current links and slow in case of load taps changers thermostatic load recovery.
+
+Load characteristic is an expression which gives active power  which is consumed by the load as the function of voltage load demand or called as an independent variable. If load demand is denoted as Z the expression for load characteristic is ,
+P=P(zV)
+Q=Q(z,V)
+
+IMPORTANT QUESTIONS:
+1-write about PV curve?
+Ans- PV curves are the most widely used curves and it requires proper technique to avoid numerical instability. In a large systems a closed form expression is not possible in such type of cases power flow equations are solved numerically for each operating point.
+
+2-Discuss PV curve for voltage stability assessment?
+Ans- Intersection of load characteristic and network  characteristic is an operating point of a power system .An operating point can be obtained as long as there is a point of intersection between two curves. Let us consider a contingency which results in a new network PV curve due to which the system moves from point “a” to point”b”which corresponds  to the short term characteristic load. For long term characteristic load the power restoring devices act on the system and gives the final operating point “c”. in this figure the vertical line ac is the long term load characteristic. The intersection of line implies that the system is able to restore power at steady state. Constant power characteristic of load is assumed in steady state analysis which is the most restrictive assumption.Let us consider the outage of another devices from the system at the point “c” for which we have smaller PV curves and the new point of intersection between is “d”. here there is no intersection between the load  and network curves in the long run.
+
+4-Discuss about effect of load model on voltage stability?
+Ans- Load is considered as an important factor of voltage stability. The characteristic of load governs the dynamic evolution of voltage instability. For different load model the point of voltage collapse is different. The load model includes slow and fast acting loads,and the load model attributes to the fact that  the power system has the capacity to restore its voltage leval to some of the devices. The power restoration can be fast in case of induction motor and high voltage direct current links and slow in case of load taps changers thermostatic load recovery.
+Load characteristic is an expression which gives active power  which is consumed by the load as the function of voltage load demand or called as an independent variable. If load demand is denoted as Z the expression for load characteristic is ,
+P=P(zV)
+Q=Q(z,V)

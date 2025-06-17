@@ -1,0 +1,180 @@
+[1]. Power System Voltage Stability
+At any point of time, a power system operating condition should be stable, meeting various operational
+criteria, and it should also be secure in the event of any credible contingency. Present day power
+systems are being operated closer to their stability limits due to economic and environmental
+constraints. Maintaining a stable and secure operation of a power system is therefore a very important
+and challenging issue. Voltage instability has been given much attention by power system researchers
+and planners in recent years, and is being regarded as one of the major sources of power system
+insecurity. Voltage instability phenomena are the ones in which the receiving end voltage decreases well
+below its normal value and does not come back even after setting restoring mechanisms such as VAR
+compensators, or continues to oscillate for lack of damping against the disturbances. Voltage collapse is
+the process by which the voltage falls to a low, unacceptable value as a result of an avalanche of events
+accompanying voltage instability [1]. Once associated with weak systems and long lines, voltage
+problems are now also a source of concern in highly developed networks as a result of heavier loading.
+ 
+The main factors causing voltage instability in a power system are now well explored and
+understood [1-13]. A brief introduction to the basic concepts of voltage stability and some of the
+conventional methods of voltage stability analysis are presented in this chapter. Simulation results on
+test power systems are presented to illustrate the problem of voltage stability and the conventional
+methods to analyze the problem. Limitations of conventional methods of voltage stability analysis are
+pointed out and the scope of the use of Artificial Neural Networks as a better alternative is discussed.
+
+[2]. Classification of voltage stability
+The time span of a disturbance in a power system, causing a potential voltage instability problem, can be
+classified into short-term and long-term. The corresponding voltage stability dynamics is called shortterm and long-term dynamics respectively [2-5]. Automatic voltage regulators, excitation systems,
+turbine and governor dynamics fall in this short-term or ‘transient’ time scale, which is typically a few
+seconds. Induction motors, electronically operated loads and HVDC interconnections also fall in this
+category. If the system is stable, short-term disturbance dies out and the system enters a slow long-term
+dynamics. Components operating in the long-term time frame are transformer tap changers, limiters,
+boilers etc. Typically, this time frame is for a few minutes to tens of minutes. A voltage stability problem
+in the long-term time frame is mainly due to the large electrical distance between the generator and the
+load, and thus depends on the detailed topology of the power system.
+ 
+Figure 1.1 shows the components and controls that may affect the voltage stability of a power
+system, along with their time frame of operation [1]. Examples of short-term or transient voltage
+instability can be found in the instability caused by rotor angle imbalance or loss of synchronism. Recent
+studies have shown that the integration of highly stressed HVDC links degrades the transient voltage
+stability of the system [1]. 
+
+There is not much scope for operator intervention in transient voltage instability. The transmission
+system operator (TSO) mainly relies on automatic emergency actions to avoid incumbent voltage
+instability. The automatic corrective actions are taken through protective devices to preserve operation
+of largest possible part of the power system by isolating the unstable part [6].
+
+Long-term voltage instability (or mid-term or post-transient, as it is sometimes called) problems
+can occur in heavily loaded systems where the electrical distance is large between the generator and the
+load. The instability may be triggered by high power imports from remote generating stations, a sudden
+large disturbance, or a large load buildup (such as morning or afternoon pickup). Operator intervention
+may be possible if the time scale is long enough. Timely application of reactive power compensation or
+load shedding may prevent this type of voltage instability.
+
+From the point of view of techniques used to analyze the voltage stability, it is often useful to
+categorize the problem into small-disturbance and large-disturbance voltage stability [2]. Small
+disturbance or steady state voltage stability deals with the situation when the system is subjected to a
+small perturbation, such that the system can be analyzed by linearizing around the pre-disturbance
+operating point. Steady state stability analysis is helpful in getting a qualitative picture of the system,
+i.e., how stressed the system is, or how close the system is, to the point of instability. Examples of
+steady state stability can be found in power systems experiencing gradual change in load.
+
+Large-disturbance stability deals with larger disturbances such as loss of generation, loss of line
+etc. To analyze the large-disturbance stability, one has to capture the system dynamics for the whole
+time frame of the disturbance. A suitable model of the system has to be assumed and a detailed
+dynamic analysis has to be carried out in order to get a clear picture of the stability.
+
+[3]. Voltage stability of a simple 2-bus system
+The basic concept of voltage stability can be explained with a simple 2-bus system shown in Figure 1.2.
+The load is of constant power type. Real power transfer from bus 1 to 2 is given by
+P = (EV / X) sin(δ)
+Reactive power transfer from bus 1 to 2 is given by,
+Q = -(V^2 / X)+((EV/X)cosδ)
+where, E = E∠δ is the voltage at bus 1,
+V = V∠0 is the voltage at bus 2,
+X= impedance of the line (neglecting resistance),
+δ = power angle.
+
+Normalizing the terms in (1.1) and (1.2) with v = V/E , p = P.X/E^2
+and q = Q.X/E^2, one obtains,
+p = v sin δ
+q = - v^2
+q = -v^2 + v cos δ
+Squaring the two equations above and rearranging,
+v^2(sin^2 δ + cos^2 δ) = p^2 +(q + v^2)^2
+or, v^4 + v^2 (2q - 1) + (p^2 + q^2) = 0
+Positive real solutions of v from (1.5) are given by
+v = √[(1/2 - q ± √(1/4 - p² - q))/2]
+
+A plot of v on the p-q-v plane is shown in Figure 1.3 [4]. Corresponding to each point (p,q), there are two
+solutions for voltage, one is the high voltage or stable solution, which is the actual voltage at the bus,
+and the other one is the low voltage or unstable solution. The equator, along which the two solutions of
+v are equal, represents maximum power points. Starting from any operating point on the upper part of
+the surface, an increase in p or q or both brings the system closer to the maximum power point. An
+increase in p or q beyond the maximum power point makes the voltage unstable. 
+
+The preceding discussion illustrates voltage instability caused by an increase in system loading.
+In a real power system, voltage instability is caused by a combination of many additional factors which
+includes the transmission capability of the network, generator reactive power and voltage control limits,
+voltage sensitivity of the load, characteristics of reactive compensation devices, action of voltage control
+devices such as transformer under load tap changers (ULTCs) etc.
+
+[4]. Tools for voltage stability analysis
+Different methods exist in the literature for carrying out a steady state voltage stability analysis. The
+conventional methods can be broadly classified into the following types.
+1. P-V curve method.
+2. V-Q curve method and reactive power reserve.
+3. Methods based on singularity of power flow Jacobian matrix at the point of voltage
+collapse.
+4. Continuation power flow method.
+
+[4.1] P-V curve method
+This is one of the widely used methods of voltage stability analysis. This gives the available amount of
+active power margin before the point of voltage instability. For radial systems, the voltage of the critical
+bus is monitored against the changes in real power consumption. For large meshed networks, P can be
+the total active load in the load area and V can be the voltage of the critical or representative bus. Real
+power transfer through a transmission interface or interconnection also can be studied by this method.
+
+For a simple two-bus system as shown in Figure 1.2, equation (1.6) gives real solutions of v^2,
+provided (1 – 4q – 4p^2) ≥ 0.
+Assuming a constant power factor load such that q/p = k (constant), the inequality
+p ≤ 1/2 ((1 + k²)^1/2 - k)
+For values of 'p' satisfying (1.7), there are two solutions of v as follows:
+v₁ = (1/2 - pk + (1/4 - pk - p²)^1/2)^1/2
+and     v₂ = (1/2 - pk - (1/4 - pk - p²)^1/2)^1/2
+For real values of v₁ and v₂, the terms under the square roots should be positive.
+Hence,      (1/2 - pk - (1/4 - pk - p²)^1/2) ≥ 0
+or,         p²(k² + 1) ≥ 0
+which is always true.
+
+Hence (1.7) is the inequality that determines the maximum value of p.
+Thus, representing the load as a constant power factor type, with a suitably chosen power
+factor, the active power margin can be computed from (1.7). For different values of load power factors,
+i.e., for different corresponding values of ‘k’, the normalized values of load active power are shown in
+Figure 1.4. 
+
+In practice, it is possible to find the Thevenin equivalent of any system with respect to the bus
+under consideration. It is to be noted that the generations are rescheduled at each step of change of the
+load. Some of the generators may hit the reactive power limit. The network topology may keep changing
+with respect to the critical bus, with change in the loading, thereby reducing the accuracy of the
+method. This method works well in the case of an infinite bus and isolated load scenario. 
+
+[5]. Detailed voltage stability analysis of the 10-bus test system for
+different loading conditions
+Voltage stability analysis is carried out for the 10-bus test system described earlier in this chapter.
+Different transformer tap settings for different load levels and corresponding generations for the 10-bus
+test system are given in Tables 1.7 to 1.9 [2, 17]. Simulations are carried out with and without load tap
+changers (LTCs) between bus 4 and bus 10. The effect of line outage on voltage stability is also studied. 
+
+Simulations are done in PowerWorld Simulator [18]. Base case conditions for three load levels
+are as follows.
+• All the transformers are at fixed tap [Table 1.7].
+• The load at bus 8 [Table 1.8] is of constant power type, while that of bus 4 is 50% constant
+power and 50% constant current. 
+
+Simulation results are recorded at four different operating conditions (or ‘snapshots’) at three different
+load levels and are presented in Tables 1.10 to 1.12. The effect of LTC between bus 10 and 4 on voltages
+at different busses, as well as the reactive power generation and consumption in nearby busses are
+studied. 
+
+At ‘snapshot 1’, i.e., when there is no line outage in the system and the LTC is kept at fixed tap
+position, bus 4 voltage reduces with increased loading. At load level 3, the voltage level is very low and it
+needs LTC operation to restore the voltage. 
+
+When the LTC is turned on, there is a considerable increase in load bus (bus 4) voltage. With
+higher voltage, load power consumption increases (because of 50% constant current load), which leads
+to the reduction of voltages in the adjacent busses. At reduced voltage, output of the shunt capacitor
+reduces, thereby stressing the generators to produce more reactive power. 
+
+With outage of one line between bus 6 and bus 7, less power is available to the load from the
+two generators at the other end of the system, thus the voltages reduce at the load end busses. Output
+of the shunt capacitor falls because of reduced voltage and as a result load voltage deceases further.
+Generators are more stressed and produce more reactive power to compensate for the loss.
+
+Even with operation of LTC after line outage, load voltage is not restored significantly. A reason
+for this is the shortage of available reactive power at the load end because of the line outage and
+reduced efficiency of capacitors due to reduced voltage. In an attempt to raise the voltage, LTC
+increases load power consumption. If the load is slightly increased, it can be seen that this reduces the
+voltage further and eventually the system faces a voltage collapse. 
+
+Modal analysis was carried out on the reduced Jacobian matrix of the system for different
+operating conditions and the results are shown in Table 1.13. It can be seen that the minimum
+eigenvalue of the reduced Jacobian matrix reduces with load. It can be used as an indicator of the
+closeness of the operating point to the point of voltage collapse.

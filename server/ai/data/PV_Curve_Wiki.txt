@@ -1,0 +1,34 @@
+[1]. Power-Voltage Curve (P-V Curve)
+Power-voltage curve (also P-V curve) describes the relationship between the active power delivered to the electrical load and the voltage at the load terminals in an electric power system under a constant power factor. When plotted with power as a horizontal axis, the curve resembles a human nose, thus it is sometimes called a nose curve.
+
+The overall shape of the curve (similar to a parabola placed on its side) is defined by the basic electrical equations and does not change much when the characteristics of the system vary. Leading power factor stretches the "nose" further to the right and upwards, while the lagging power factor shrinks the curve.
+
+[2]. The Nose Curve Concept
+The curve is important for voltage stability analysis, as the coordinate of the tip of the nose defines the maximum power that can be delivered by the system. As the load increases from zero, the power-voltage point travels from the top left part of the curve to the tip of the "nose" (power increases, but the voltage drops).
+
+The tip corresponds to the maximum power that can be delivered to the load (as long as sufficient reactive power reserves are available). Past this "collapse" point additional loads cause drop in both voltage and power, as the power-voltage point travels to the bottom left corner of the plot.
+
+[3]. Physical Interpretation
+Intuitively this result can be explained when a load that consists entirely of resistors is considered: as the load increases (its resistance thus lowers), more and more of the generator power dissipates inside the generator itself (that has its own fixed resistance connected sequentially with the load).
+
+Operation on the bottom part of the curve (where the same power is delivered with lower voltage – and thus higher current and losses) is not practical, as it corresponds to the "uncontrollability" region.
+
+[4]. Voltage Stability and Maximum Loading Condition
+If sufficient reactive power is not available, the limit of the load power will be reached prior to the power-voltage point getting to the tip of the "nose". The operator shall maintain a sufficient margin between the operating point on the P-V curve and this maximum loading condition, otherwise, a voltage collapse can occur.
+
+The maximum loading condition represents the critical point beyond which the system becomes unstable and voltage collapse is imminent. This point is characterized by the tip of the nose curve where both the power and voltage reach their maximum sustainable values simultaneously.
+
+[5]. Q-V Curve
+A similar curve for the reactive power is called Q-V curve. The Q-V curve describes the relationship between reactive power and voltage at a particular bus in the power system. Like the P-V curve, the Q-V curve is essential for understanding the reactive power requirements and voltage stability limits of the system.
+
+The Q-V curve helps in determining the reactive power margin available at different voltage levels and is particularly useful for planning reactive power compensation devices and assessing voltage stability from a reactive power perspective.
+
+[6]. Practical Applications
+P-V curves are widely used in power system analysis for:
+- Voltage stability assessment
+- Determining maximum loadability limits
+- Planning system expansion
+- Identifying critical buses and weak areas
+- Setting operating margins for secure system operation
+
+The curves provide system operators with essential information about how close the system is operating to its voltage stability limits and help in making informed decisions about load shedding, reactive power dispatch, and emergency control actions.
