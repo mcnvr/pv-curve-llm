@@ -4,8 +4,10 @@ Simple local RAG-based AI agent for Power-Voltage curve analysis using DeepSeek 
 
 ## Installation & Run
 
+Run LLM locally:
+
 ```bash
-cd agent-test
+cd /server/ai
 python -m venv venv
 source venv/bin/activate  # Windows: venv\Scripts\activate
 pip install -r requirements.txt

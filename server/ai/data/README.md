@@ -1,6 +1,6 @@
 # Data
 
-This data is not necessarily final or reliable, but is initial testing training data for the LLM for testing purposes.
+This data is not necessarily final or reliable, but is initial training data for the LLM for testing purposes.
 
 DISCLAIMER: Information such as ```Grok_Generated_Deep_Search``` is AI generated and will eventually be removed, as it is temporary to speed up the development process. Some of this information may be incorrect as it is created by AI.
 
