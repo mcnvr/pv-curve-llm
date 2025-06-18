@@ -1,10 +1,10 @@
 '''
 Goal Architecture:
 Script to train model on the data.
-train.py
+embed.py
     - Currently this is handled in vector.py, need to separate.
 
-Creation and interaction with vector database, calls train.py if requested.
+Creation and interaction with vector database, calls embed.py if requested.
 vector.py
 
 Main script to run the trained model accessing the vector database.
