@@ -2,6 +2,124 @@
 Get values to generate PV curve for power system voltage stability analysis
 '''
 
+def validate_integer_input(prompt, example, min_val=None, max_val=None):
+    """Validate integer input with re-prompting"""
+    while True:
+        try:
+            value = input(prompt).strip()
+            if not value:
+                raise ValueError("Input cannot be empty")
+            result = int(value)
+            if min_val is not None and result < min_val:
+                raise ValueError(f"Value must be >= {min_val}")
+            if max_val is not None and result > max_val:
+                raise ValueError(f"Value must be <= {max_val}")
+            return result
+        except ValueError as e:
+            print(f"❌ Invalid input: {e}")
+            print(f"   Example: {example}")
+            print("   Please try again.\n")
+
+def validate_float_input(prompt, example, min_val=None, max_val=None, allow_empty=False, default=None):
+    """Validate float input with re-prompting"""
+    while True:
+        try:
+            value = input(prompt).strip()
+            if not value:
+                if allow_empty and default is not None:
+                    return default
+                elif allow_empty:
+                    return None
+                else:
+                    raise ValueError("Input cannot be empty")
+            result = float(value)
+            if min_val is not None and result < min_val:
+                raise ValueError(f"Value must be >= {min_val}")
+            if max_val is not None and result > max_val:
+                raise ValueError(f"Value must be <= {max_val}")
+            return result
+        except ValueError as e:
+            print(f"❌ Invalid input: {e}")
+            print(f"   Example: {example}")
+            print("   Please try again.\n")
+
+def validate_bus_list_input(prompt, example):
+    """Validate comma-separated bus numbers"""
+    while True:
+        try:
+            value = input(prompt).strip()
+            if not value:
+                raise ValueError("Input cannot be empty")
+            
+            # Parse comma-separated values
+            bus_list = []
+            for bus_str in value.split(','):
+                bus_num = int(bus_str.strip())
+                if bus_num < 0:
+                    raise ValueError("Bus numbers must be non-negative")
+                bus_list.append(bus_num)
+            
+            if len(bus_list) == 0:
+                raise ValueError("Must specify at least one bus")
+            
+            return bus_list
+        except ValueError as e:
+            print(f"❌ Invalid input: {e}")
+            print(f"   Example: {example}")
+            print("   Please try again.\n")
+
+def validate_choice_input(prompt, valid_choices, example, allow_empty=False, default=None):
+    """Validate input against a list of valid choices"""
+    while True:
+        value = input(prompt).strip().lower()
+        if not value:
+            if allow_empty and default is not None:
+                return default
+            elif allow_empty:
+                return ""
+            else:
+                print(f"❌ Input cannot be empty")
+                print(f"   Valid choices: {', '.join(valid_choices)}")
+                print(f"   Example: {example}")
+                print("   Please try again.\n")
+                continue
+        
+        if value in valid_choices:
+            return value
+        else:
+            print(f"❌ Invalid choice: '{value}'")
+            print(f"   Valid choices: {', '.join(valid_choices)}")
+            print(f"   Example: {example}")
+            print("   Please try again.\n")
+
+def validate_contingency_input(prompt, example):
+    """Validate contingency format (bus1_bus2)"""
+    while True:
+        try:
+            value = input(prompt).strip()
+            if not value:
+                return None  # Empty is allowed for contingencies
+            
+            if '_' not in value:
+                raise ValueError("Contingency must be in format 'bus1_bus2'")
+            
+            parts = value.split('_')
+            if len(parts) != 2:
+                raise ValueError("Contingency must have exactly two bus numbers separated by '_'")
+            
+            # Validate both parts are integers
+            bus1, bus2 = int(parts[0]), int(parts[1])
+            if bus1 < 0 or bus2 < 0:
+                raise ValueError("Bus numbers must be non-negative")
+            if bus1 == bus2:
+                raise ValueError("Source and destination buses must be different")
+            
+            return value
+        except ValueError as e:
+            print(f"❌ Invalid input: {e}")
+            print(f"   Example: {example}")
+            print("   Please try again.\n")
+
 def collect_pv_curve_inputs():
     print("=== PV Curve Generation - Input Collection ===\n")
     
@@ -12,39 +130,66 @@ def collect_pv_curve_inputs():
     # Common IEEE test systems like IEEE 39-bus represent standard power grid configurations
     # used for research and testing. Larger numbers mean more complex grids.
     print("\n1. Power System Model:")
-    grid_size = input("   Enter power grid model (e.g., IEEE 39, IEEE 118, Custom): ").strip()
+    while True:
+        grid_size = input("   Enter power grid model (e.g., IEEE 39, IEEE 118, Custom): ").strip()
+        if grid_size:
+            break
+        else:
+            print("❌ Grid model cannot be empty")
+            print("   Example: IEEE 39")
+            print("   Please try again.\n")
     
     # Source and sink configuration - Source buses inject power (like generators), sink buses consume it (like loads)
     # The PV curve shows how voltage changes as we transfer more power from sources to sinks
     # Multiple buses can be specified to represent generator groups or load areas
     print("\n2. Power Transfer Configuration:")
     # Where you're adding more power generation
-    source_bus = input("   Enter source bus number(s) (comma-separated if multiple): ").strip()
+    source_buses = validate_bus_list_input(
+        "   Enter source bus number(s) (comma-separated if multiple): ",
+        "1,2 or 5"
+    )
     # Where you're adding more load demand
-    sink_bus = input("   Enter sink/load bus number(s) (comma-separated if multiple): ").strip()
+    sink_buses = validate_bus_list_input(
+        "   Enter sink/load bus number(s) (comma-separated if multiple): ",
+        "3,4 or 8"
+    )
     
     # Monitoring bus - This is the specific location where we track voltage changes
     # As power transfer increases, voltage at this bus will drop, creating the PV curve
     # Usually chosen as a critical load bus or the weakest point in the system
     print("\n3. Voltage Monitoring:")
     # Where you're watching voltage changes
-    monitor_bus = input("   Enter bus number to monitor voltage: ").strip()
+    monitor_bus = validate_integer_input(
+        "   Enter bus number to monitor voltage: ",
+        "6", min_val=0
+    )
     
     # Step size parameters - Control how power transfer is gradually increased during analysis
     # Initial step: how much power (MW) to add each iteration
     # Minimum step: smallest increment before stopping (determines accuracy)
     # Reduction factor: how much to reduce step size when convergence fails
     print("\n4. Step Size Configuration:")
-    initial_step = float(input("   Enter initial step size (MW) [default: 100]: ") or "100")
-    min_step = float(input("   Enter minimum step size (MW) [default: 10]: ") or "10")
-    step_reduction_factor = float(input("   Enter step reduction factor when convergence fails [default: 2]: ") or "2")
+    initial_step = validate_float_input(
+        "   Enter initial step size (MW) [default: 100]: ",
+        "100", min_val=0.1, allow_empty=True, default=100.0
+    )
+    min_step = validate_float_input(
+        "   Enter minimum step size (MW) [default: 10]: ",
+        "10", min_val=0.01, allow_empty=True, default=10.0
+    )
+    step_reduction_factor = validate_float_input(
+        "   Enter step reduction factor when convergence fails [default: 2]: ",
+        "2", min_val=1.1, allow_empty=True, default=2.0
+    )
     
     # Transfer limits - Maximum power transfer to prevent analysis from running indefinitely
     # Useful when you know the approximate limit or want to focus on a specific range
     # Leave blank to find the natural voltage collapse point
     print("\n5. Transfer Limits:")
-    max_transfer = input("   Enter maximum transfer limit (MW) [optional, press Enter to skip]: ").strip()
-    max_transfer = float(max_transfer) if max_transfer else None
+    max_transfer = validate_float_input(
+        "   Enter maximum transfer limit (MW) [optional, press Enter to skip]: ",
+        "500", min_val=0, allow_empty=True
+    )
     
     # Optional Inputs
     print("\nOPTIONAL INPUTS:")
@@ -55,19 +200,33 @@ def collect_pv_curve_inputs():
     # Constant impedance: load impedance stays same (highest voltage dependency)
     # Voltage exponent: 0=constant power, 1=constant current, 2=constant impedance
     print("\n6. Load Model Configuration:")
-    load_model = input("   Enter load model type (constant_power, constant_current, constant_impedance) [default: constant_power]: ").strip() or "constant_power"
-    voltage_exponent = float(input("   Enter voltage exponent for load model [default: 0]: ") or "0")
+    load_model = validate_choice_input(
+        "   Enter load model type (constant_power, constant_current, constant_impedance) [default: constant_power]: ",
+        ["constant_power", "constant_current", "constant_impedance"],
+        "constant_power", allow_empty=True, default="constant_power"
+    )
+    voltage_exponent = validate_float_input(
+        "   Enter voltage exponent for load model [default: 0]: ",
+        "0", min_val=0, max_val=2, allow_empty=True, default=0.0
+    )
     
     # Contingency analysis - Simulates equipment failures like transmission line outages
     # Important for finding the most critical operating conditions that could cause voltage collapse
     # Contingencies test "what if" scenarios: what happens if this transmission line fails?
     print("\n7. Contingency Analysis:")
-    include_contingencies = input("   Include contingency analysis? (y/n) [default: n]: ").strip().lower()
+    include_contingencies = validate_choice_input(
+        "   Include contingency analysis? (y/n) [default: n]: ",
+        ["y", "yes", "n", "no"],
+        "n", allow_empty=True, default="n"
+    )
     contingencies = []
     if include_contingencies in ['y', 'yes']:
         print("   Enter contingencies (format: line_from_to, e.g., 1_2 for line from bus 1 to bus 2):")
         while True:
-            contingency = input("   Contingency (press Enter when done): ").strip()
+            contingency = validate_contingency_input(
+                "   Contingency (press Enter when done): ",
+                "1_2"
+            )
             if not contingency:
                 break
             contingencies.append(contingency)
@@ -76,30 +235,65 @@ def collect_pv_curve_inputs():
     # More scenarios = more comprehensive analysis but longer computation time
     # Base case completion ensures we find the limit even without equipment failures
     print("\n8. Analysis Options:")
-    critical_scenarios = int(input("   Number of critical scenarios to find [default: 5]: ") or "5")
-    run_base_to_completion = input("   Run base case to completion? (y/n) [default: y]: ").strip().lower() != 'n'
+    # Need to handle this differently since validate_integer_input doesn't support defaults
+    while True:
+        try:
+            temp_input = input("   Number of critical scenarios to find [default: 5]: ").strip()
+            if not temp_input:
+                critical_scenarios = 5
+                break
+            critical_scenarios = int(temp_input)
+            if critical_scenarios < 1 or critical_scenarios > 20:
+                raise ValueError("Number must be between 1 and 20")
+            break
+        except ValueError as e:
+            print(f"❌ Invalid input: {e}")
+            print("   Example: 5")
+            print("   Please try again.\n")
+    
+    run_base_to_completion = validate_choice_input(
+        "   Run base case to completion? (y/n) [default: y]: ",
+        ["y", "yes", "n", "no"],
+        "y", allow_empty=True, default="y"
+    ) in ['y', 'yes']
     
     # Generator limits - Real generators have limits on how much reactive power they can provide
     # Reactive power is needed to maintain voltage; when generators hit limits, voltage drops faster
     # Including limits makes the analysis more realistic but may reduce the apparent stability margin
     print("\n9. Generator Configuration:")
-    consider_gen_limits = input("   Consider generator reactive power limits? (y/n) [default: y]: ").strip().lower() != 'n'
+    consider_gen_limits = validate_choice_input(
+        "   Consider generator reactive power limits? (y/n) [default: y]: ",
+        ["y", "yes", "n", "no"],
+        "y", allow_empty=True, default="y"
+    ) in ['y', 'yes']
     
     # Tolerance settings - Control the numerical accuracy of power flow calculations
     # MVA tolerance: how close power balance must be (smaller = more accurate)
     # AGC tolerance: automatic generation control precision (prevents generator hunting)
     # Tighter tolerances give more accurate results but may slow down computation
     print("\n10. Tolerance Settings:")
-    mva_tolerance = float(input("   MVA convergence tolerance [default: 1.0]: ") or "1.0")
-    agc_tolerance = float(input("   Island-based AGC tolerance [default: 5.0]: ") or "5.0")
+    mva_tolerance = validate_float_input(
+        "   MVA convergence tolerance [default: 1.0]: ",
+        "1.0", min_val=0.001, max_val=10.0, allow_empty=True, default=1.0
+    )
+    agc_tolerance = validate_float_input(
+        "   Island-based AGC tolerance [default: 5.0]: ",
+        "5.0", min_val=0.1, max_val=50.0, allow_empty=True, default=5.0
+    )
     
     # System parameters - Basic electrical characteristics of the power system
     # Base MVA: reference power level for per-unit calculations (typically 100 MVA)
     # Nominal frequency: standard operating frequency (60 Hz in North America, 50 Hz elsewhere)
     # These are used for normalizing and scaling the analysis results
     print("\n11. System Parameters:")
-    base_mva = float(input("   System base MVA [default: 100]: ") or "100")
-    nominal_frequency = float(input("   Nominal frequency (Hz) [default: 60]: ") or "60")
+    base_mva = validate_float_input(
+        "   System base MVA [default: 100]: ",
+        "100", min_val=1.0, max_val=10000.0, allow_empty=True, default=100.0
+    )
+    nominal_frequency = validate_float_input(
+        "   Nominal frequency (Hz) [default: 60]: ",
+        "60", min_val=40.0, max_val=100.0, allow_empty=True, default=60.0
+    )
     
     # Compile all inputs
     inputs = {
@@ -109,9 +303,9 @@ def collect_pv_curve_inputs():
             'nominal_frequency': nominal_frequency
         },
         'transfer_config': {
-            'source_buses': [int(x.strip()) for x in source_bus.split(',')],
-            'sink_buses': [int(x.strip()) for x in sink_bus.split(',')],
-            'monitor_bus': int(monitor_bus)
+            'source_buses': source_buses,
+            'sink_buses': sink_buses,
+            'monitor_bus': monitor_bus
         },
         'step_config': {
             'initial_step_mw': initial_step,
@@ -140,7 +334,7 @@ def collect_pv_curve_inputs():
     
     print("\n=== Input Collection Complete ===")
     print(f"Collected inputs for {grid_size} system")
-    print(f"Transfer from bus(es) {source_bus} to {sink_bus}")
+    print(f"Transfer from bus(es) {source_buses} to {sink_buses}")
     print(f"Monitoring voltage at bus {monitor_bus}")
     print(f"Step size: {initial_step} MW (min: {min_step} MW)")
     
