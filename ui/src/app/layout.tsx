@@ -13,8 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Create a PV-Curve",
+  title: "Nose-LLM",
   description: "Generate PV-Curves using AI",
+  icons: {
+    icon: "/nose-llm-logo.png",
+  },
 };
 
 export default function RootLayout({

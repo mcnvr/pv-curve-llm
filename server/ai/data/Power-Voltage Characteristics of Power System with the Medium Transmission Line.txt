@@ -1,0 +1,156 @@
+Abstract: Problem statement: Power-Voltage curve provides very important information for voltage
+stability analysis. The exact medium transmission line model consists of the resistance and the
+reactance. The resistance causes in the active line loss. It is not easy task to achieve the power-voltage
+curve characteristics of power system with the exact medium line model. Approach: This study
+applies the concept of the Newton-Raphson method to iteratively solve the nonlinear power flow
+equations. The Power-Voltage (P-V) curve charateristic of the system without line loss and with line
+loss are plotted and compared on various cases. Results: It is found from the study that the resistance
+of the line obviously provides the negative effects on the voltage stability. The line loss causes in the
+decrement of the critical point. In addition, it is found that the leading power factor can increase the
+critical point of P-V curve. Conclusion: The exact medium line model should be considered for
+voltage stability analysis of the system with the medium transmission line.
+
+Power system stability is classified as rotor angle
+stability and voltage stability. Voltage stability is a
+stability in power systems which are heavily loaded,
+distubeanced or have a mediumage of reactive power.
+Nowadays, the demand of electricity has dramatically
+increased and a modern power system becomes a
+complex network of transmission lines interconnecting
+the generating stations to the major loads points in the
+overall power system in order to support the high
+demand of consumers. It is becoming increasingly
+important to fully utilize the existing transmission
+system assets due to environmental legislation, rightsof-way issues and costs of construction and
+deregulation policies that introduced in recent years. A
+number of Flexible AC Transmission System (FACTS)
+controllers, based on the rapid development of power
+electronics technology, have been proposed for better
+utilization of the existing transmission systems
+(Subramani et al., 2012; Omar et al., 2010; Osuwa and
+Igwiro, 2010; Marimuthu and Thangaraj, 2010; ZarateMinano et al., 2010)
+
+The evaluation of the power-votage (P-V) curve of
+the power system is one of the most important research
+areas for power engineers because it indicates the
+maximum power load. If the load is increased beyond
+the maximu value, the voltage will be collapsed and
+then the system is considered as unstable.
+
+The transmission line is one of the most important
+parts in power system components. Most of the fault
+occurs at the transmission line. It is generally divided
+into three major categories; medium, medium and long
+model whose distance are about 80 km, above 80-250
+and above 250 km, respectively. Many previous
+researches used simple transmission line model by
+neglecting its resistance or capacitance. To fully
+utilization the existing system, the exact transmission
+line should be further investigated. This study investigated the effects of line losss in
+medium transmission line on voltage stability. The
+mathematical model of the power flow is systematically
+derived. The concept of the Newton-Raphson method
+is applied to iteratively solve the nonlinear power flow
+equations. The Power-Voltage (P-V) curve charateristic
+of the system without line loss and with line loss are
+plotted, discussed and compared on various cases. 
+
+Mathematical model: Consider the simple system as
+shown in Fig. 1. The generator supplies the active
+power and reactive power, which is transferred through
+a transmission line to the load. The voltage at generator
+bus (VS) is considered as constant value. The exact
+medium transmission line model is represented by the
+series impedance (Z) consisting of a resistance (R) and
+reactance (X) and shunt admittance (Y) or susceptance
+line charging (B). The load is represented by the active
+(PR) and reactive power (QR).
+
+A₁ = (1 + YZ/2)                                    (1)
+B = Z                                              (2)
+C = Y(1 + YZ/4)                                    (3)
+D₁ = A₁                                            (4)
+From Eq. 1-4, the voltage and the current at load
+bus (VR,IR) can be expressed in terms of matrix by:
+[VR] = [D  -B] [VS]
+[IR]   [-C  A ] [IS]                               (5)
+From Eq. 5, the line current at load bus is given by
+Eq. 6:
+IR = (VS - AVR)/B = (VSZ(δ - θR) - AVR)/B ∠(θA - θR)   (6)
+The complex power load is written by Eq. 7:
+SR = PR + jQR = VRIR*
+   = (VRVS)/B ∠(θR - δ) - (AVR²)/B ∠(θR - θA)    (7)
+Then the active and reactive power load are given
+by Eq. 8 and 9:
+PR = (VRVS)/B cos(θR - δ) - (AVR²)/B cos(θR - θA)  (8)
+And:
+QR = (VRVS)/B sin(θR - δ) - (AVR²)/B sin(θR - θA)  (9)
+
+The objective of this study is to evaluate the
+voltage at load bus (VR) with various cases of load. This
+study applies the Newton-Raphson method to
+iteratively solve the nonlinear Eq. of 3 and 4 given by
+Eq. 10:
+[ΔPR]   [∂PR/∂δ    ∂PR/∂VR] [Δδ]
+[ΔQR] = [∂QR/∂δ    ∂QR/∂VR] [ΔV]                    (10)
+The general form of (5) is given by Eq. 11:
+[ΔPR]   [J1    J2] [Δδ]
+[ΔQR] = [J3    J4] [ΔV]                              (11)
+This study will investigate the effect of line loss on
+voltage stability of the system and be compared that of
+without line loss. Without line loss, the active and
+reactive powers are given by Eq. 12 and 13:
+PR = (VRVS/X) sin δ                                   (12)
+And:
+QR = (VR/X)[VR - VS cos δ]                           (13)
+The characteristic of the P-V curve for neglecting
+line loss is shown in Fig. 2. The power system are
+operated in upper part of the P-V curve. The head of the
+P-V curve is called the critical point (V_R^cr, P_R^cr). The
+critical point provides very important information to
+power system engineers. If the system supplies load
+beyond P_R^cr, it causes in voltage collapse.
+
+The proposed method is tested on the sample
+system consider the diagram of sample system is shown
+in Fig. 1. The system supplies power which is
+transferred through a 130 km transmission line to the
+load. The system voltage at the generator bus is 345 kV.
+Fig. 3 shows the P-V curve of the system with various
+parameters of the medium transmission line. 
+
+It can be seen from the Fig. 3 and Table 1 that with
+a reactance the critical power is around 1517 W and
+coresponse to the critical voltage at 244 kV. It can be
+seen from the Figure that the resistance of the line
+significantly affects on the P-V curve whereas the
+susceptance line charging slightly affects on the P-V
+curve. With the resistance and line charging, the critical
+power is decreased around to 1300 W. It was found in
+this study that the power factor affects on the critical
+point of the system. The increment of the leading power
+factor makes it possible to supply more power to the
+load. With tan φ = -0.4, the capability of the system for
+sending the active power to the load is around 1900 W.
+In contrast, with lagging power factor the critical point
+of the system is decreased. It can be observed from Fig.
+4 and Table 2 that with tan φ = 0.4the critical power is
+decresed around to 950 W. 
+
+This study investigated the effects of line loss in
+medium transmission line on voltage stability. The
+mathematical model of the power flow is systematically
+derived. The concept of the Newton-Raphson method is
+applied to iteratively solve the nonlinear power flow
+equations. The power-voltage (P-V) curve characteristic
+of the system without line loss and with line loss are
+plotted, discussed and compared on various cases. 
+
+It was found from the study that the resistance of
+the line obviously provides significantly negative
+effects on the voltage stability whereas the susceptance
+line charging improve slightly critical point. In
+addition, it was found that the leading power factor can
+significantly increase the critical point of P-V curve.
+Thus to achieve the actual capability of the system, the
+exact medium line model is needed to be considered.

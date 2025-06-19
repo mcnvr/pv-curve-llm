@@ -2,3 +2,5 @@
 /pv-curve/generated-graphs/
 /pv-curve/deprecated/
 /pv-curve/results/*
+__pycache__
+chroma_db

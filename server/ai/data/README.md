@@ -19,6 +19,10 @@ This is automatically embedded into the vector database based on its structure.
 
 ## References:
 
+- [ ] TODO: Add proper citations
+
 https://blog.oureducation.in/pv-curves-for-voltage-stability-assesment/
 
 https://www.powerworld.com/files/D14VoltageStability.pdf\
+
+https://thescipub.com/pdf/ajassp.2012.886.889.pdf

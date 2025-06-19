@@ -1,8 +1,6 @@
-# Helpful video: https://www.youtube.com/watch?v=E4l91XKQSgw
-
 from langchain_ollama.llms import OllamaLLM
 from langchain_core.prompts import ChatPromptTemplate
-from vector import retriever
+from ai.vector import get_retriever_for_api
 
 model = OllamaLLM(model="deepseek-r1:1.5b")
 
@@ -34,14 +32,50 @@ Here is the question to answer, be sure to keep your answer concise and ensure a
 prompt = ChatPromptTemplate.from_template(template)
 chain = prompt | model
 
-while True:
-    question = input("\n-----------------------------------\nEnter a question (q to quit): ")
-    if question.lower() == "q":
-        break
+# Global variable to store retriever (lazy loaded)
+retriever = None
 
-    context = retriever.invoke(question)
-    print("Searching for context...")
-    print(f"Found {len(context)} documents")
+def get_ai_response_stream(question):
+    """
+    Generator function that yields AI response chunks as they're generated.
+    Used for streaming responses to the frontend.
+    """
+    global retriever
+    
+    # Lazy load the retriever only when needed
+    if retriever is None:
+        try:
+            retriever = get_retriever_for_api()
+        except Exception as e:
+            yield f"Error initializing AI system: {str(e)}. Please ensure the vector database has been created by running the training script first."
+            return
+    
+    try:
+        context = retriever.invoke(question)
+        
+        for chunk in chain.stream({"context": context, "question": question}):
+            yield chunk
+            
+    except Exception as e:
+        yield f"Error processing your question: {str(e)}. Please try again."
 
-    for chunk in chain.stream({"context": context, "question": question}):
-        print(chunk, end="", flush=True)
+def get_ai_response(question):
+    global retriever
+    
+    # Lazy load the retriever only when needed
+    if retriever is None:
+        try:
+            retriever = get_retriever_for_api()
+        except Exception as e:
+            return f"Error initializing AI system: {str(e)}. Please ensure the vector database has been created by running the training script first."
+    
+    try:
+        context = retriever.invoke(question)
+        
+        response = ""
+        for chunk in chain.stream({"context": context, "question": question}):
+            response += chunk
+        
+        return response
+    except Exception as e:
+        return f"Error processing your question: {str(e)}. Please try again." 
