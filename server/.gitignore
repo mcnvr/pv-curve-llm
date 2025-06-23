@@ -4,3 +4,4 @@
 /pv-curve/results/*
 __pycache__
 chroma_db
+ai/collected_inputs.json

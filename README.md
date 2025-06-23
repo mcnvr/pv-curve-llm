@@ -24,12 +24,13 @@ The project is structured as a full-stack application with separate frontend and
 
 ## TODO
 
+- [ ] Organize/clean project structure
 - [ ] Add more training data
 - [ ] Verify training data
 - [ ] Develop PV-Curve generation
 - [ ] Connect PV-Curve generation script to AI model
-- [ ] Finish and update all documentation across project
-- [ ] Add properly formatted references to `README.md`
+- [ ] Finish and update documentation across project
+- [ ] Add properly formatted references and citations
 
 ## Contributing
 

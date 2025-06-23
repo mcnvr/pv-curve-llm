@@ -26,10 +26,8 @@ def ask_question():
         def generate():
             try:
                 for chunk in get_ai_response_stream(question):
-                    # Format as Server-Sent Events
                     yield f"data: {json.dumps({'chunk': chunk})}\n\n"
                 
-                # Send end signal
                 yield f"data: {json.dumps({'done': True})}\n\n"
                 
             except Exception as e:

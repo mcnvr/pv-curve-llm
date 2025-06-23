@@ -32,7 +32,6 @@ Here is the question to answer, be sure to keep your answer concise and ensure a
 prompt = ChatPromptTemplate.from_template(template)
 chain = prompt | model
 
-# Global variable to store retriever (lazy loaded)
 retriever = None
 
 def get_ai_response_stream(question):
