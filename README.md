@@ -1,4 +1,4 @@
-# PV Curve LLM
+# PV Curve LLM (Work in Progress)
 
 An interactive chat-based application that uses Large Language Models (LLMs) to generate Power-Voltage (PV) curves and provide AI-powered voltage stability analysis for power systems. Users can interact with the system through a natural language chat interface to obtain technical insights, mathematical analysis, and visual representations of power system voltage stability concepts.
 
