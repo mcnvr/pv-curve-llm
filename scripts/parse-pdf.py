@@ -94,7 +94,7 @@ def split_into_chunks(text):
             
         test_chunk = current_chunk + " " + sentence if current_chunk else sentence
         
-        if len(test_chunk) > 2000:
+        if len(test_chunk) > 3000:
             if current_chunk and is_valid_paragraph(current_chunk):
                 chunks.append(current_chunk.strip())
             current_chunk = sentence
