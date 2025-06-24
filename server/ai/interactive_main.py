@@ -2,6 +2,8 @@
 This file is to test input collection, interaction, and command processing through an AI interface.
 
 Eventually this will be used to collect inputs for PV-Curve analysis and input validation through natural language.
+
+Current method: Specify commands to AI and have it respond with those commands. 
 """
 
 import json
@@ -38,8 +40,8 @@ def processing_animation():
     dot_count = 0
     
     while processing_active:
-        time.sleep(3)  # Wait 3 seconds
-        if processing_active:  # Check again in case it was stopped during sleep
+        time.sleep(3)
+        if processing_active:
             print(".", end="", flush=True)
             dot_count += 1
 
@@ -55,8 +57,8 @@ def stop_processing():
     global processing_active
     processing_active = False
     if processing_thread:
-        processing_thread.join(timeout=0.1)  # Brief wait for thread to finish
-    print()  # New line after processing
+        processing_thread.join(timeout=0.1)
+    print()
 
 def load_inputs():
     """Load previously collected inputs from file"""
@@ -182,11 +184,10 @@ def is_valid_input_value(value):
 
 def process_command(user_message, collected_inputs):
     """Process delete/modify commands using AI"""
-    if not collected_inputs:
-        return False, "No inputs exist to modify or delete."
+    # Allow command detection even if no inputs exist (for "clear all" type commands)
+    existing_inputs_text = "\n".join([f"- {key}: {value}" for key, value in collected_inputs.items()]) if collected_inputs else "No inputs currently exist"
     
     command_chain = command_detection_template() | model
-    existing_inputs_text = "\n".join([f"- {key}: {value}" for key, value in collected_inputs.items()])
     
     try:
         response = command_chain.invoke({
@@ -311,27 +312,29 @@ def main():
             display_required_inputs(list(REQUIRED_INPUTS.keys()))
             continue
         
-        # Check for delete/modify commands first
-        if collected_inputs:  # Only check for commands if there are inputs to modify
-            start_processing()
-            try:
-                command_processed, command_result = process_command(user_response, collected_inputs)
-                stop_processing()
+        # Check for delete/modify commands first (check even if no inputs exist for "clear all")
+        start_processing()
+        try:
+            command_processed, command_result = process_command(user_response, collected_inputs)
+            stop_processing()
+            
+            if command_processed:
+                print(command_result)
+                save_inputs(collected_inputs)  # This is crucial - save after any command
                 
-                if command_processed:
-                    print(command_result)
-                    save_inputs(collected_inputs)
-                    
-                    # Update missing inputs after command
-                    missing_inputs = get_missing_inputs(collected_inputs)
-                    if missing_inputs:
-                        display_required_inputs(missing_inputs)
-                    continue
+                # Update missing inputs after command
+                missing_inputs = get_missing_inputs(collected_inputs)
+                if missing_inputs:
+                    print(f"\n📝 Remaining inputs needed: {len(missing_inputs)}")
+                    display_required_inputs(missing_inputs)
                 else:
-                    stop_processing()
-            except Exception as e:
+                    print("✅ All inputs have been collected!")
+                continue
+            else:
                 stop_processing()
-                print(f"❌ Error processing command: {e}")
+        except Exception as e:
+            stop_processing()
+            print(f"❌ Error processing command: {e}")
         
         # Start processing animation
         start_processing()

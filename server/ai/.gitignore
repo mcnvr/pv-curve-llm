@@ -1,3 +1,5 @@
 /chroma_db
 /__pycache__
 /venv
+/scripts/
+!scripts/parse-pdf.py
