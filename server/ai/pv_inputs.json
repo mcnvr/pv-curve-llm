@@ -2,23 +2,16 @@
   "grid_model": "IEEE 39",
   "base_mva": 100,
   "frequency": 60,
-  "source_buses": [
-    1,
-    2,
-    7
-  ],
-  "sink_buses": [
-    3,
-    4
-  ],
+  "source_buses": "[5, 12]",
+  "sink_buses": "[24, 17]",
   "monitor_bus": 5,
   "initial_step": 100,
   "min_step": 10,
-  "step_reduction": 2,
+  "step_reduction": 4,
   "max_transfer": 1000,
   "load_model": "constant_power",
   "voltage_exponent": 0,
-  "include_contingencies": false,
+  "include_contingencies": true,
   "contingencies": [],
   "critical_scenarios": 5,
   "run_base_completion": true,
