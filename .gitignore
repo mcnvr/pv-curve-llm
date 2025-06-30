@@ -1,9 +1,4 @@
 # Cursor
 .cursor
 
-# TODO
-.venv
-
-# TODO: Add file organization to /scripts
-/scripts/carson-w-taylor-power-system-voltage-stability-1994pdf.pdf
-/scripts/chunks.txt
+/agent
