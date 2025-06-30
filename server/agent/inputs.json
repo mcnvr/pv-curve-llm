@@ -1,5 +1,21 @@
 {
-  "voltage": 120.0,
-  "current": 20.0,
-  "frequency": 60
-}
+    "grid_model": "",
+    "base_mva": "",
+    "frequency": "",
+    "source_buses": "",
+    "sink_buses": "",
+    "monitor_bus": "",
+    "initial_step": "",
+    "min_step": "",
+    "step_reduction": "",
+    "max_transfer": "",
+    "load_model": "",
+    "voltage_exponent": "",
+    "include_contingencies": "",
+    "contingencies": "",
+    "critical_scenarios": "",
+    "run_base_completion": "",
+    "generator_limits": "",
+    "mva_tolerance": "",
+    "agc_tolerance": ""
+  }

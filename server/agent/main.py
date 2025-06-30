@@ -4,8 +4,16 @@ from langchain_ollama import ChatOllama
 from langchain_core.messages import HumanMessage, AIMessage
 from pydantic import BaseModel, Field
 from typing_extensions import TypedDict, Annotated, Literal
+from vector import retriever
 import json
 
+def load_prompts():
+    with open("./prompts.json", "r") as f:
+        return json.load(f)
+
+prompts = load_prompts()
+
+# Currently using llama3.2:1b model for Ollama Tool support.
 llm = ChatOllama(
     model="llama3.2:1b",
     base_url="http://localhost:11434"
@@ -32,10 +40,7 @@ def classify_message(state: State):
     result = classifier_llm.invoke([
         {
             "role": "system",
-            "content": """Classify the user message as either a question or a command:
-            - Question: A question about the system or a request for information.
-            - Command: A command to modify the system or perform an action.
-            """
+            "content": prompts["classifier"]["system"]
         },
         {
             "role": "user",
@@ -56,9 +61,13 @@ def router(state: State):
 def response_agent(state: State):
     last_message = state["messages"][-1]
 
+    context = retriever.invoke(last_message.content)
+
     messages = [
-        {"role": "system", "content": "You are a helpful assistant that answers questions about Power Systems."},
-        {"role": "user", "content": last_message.content}
+        {"role": "system",
+         "content": prompts["response_agent"]["system"].format(context=context)},
+        {"role": "user", 
+         "content": prompts["response_agent"]["user"].format(user_input=last_message.content)}
     ]
 
     reply = llm.invoke(messages)
@@ -74,7 +83,7 @@ def command_agent(state: State):
     result = modifier_llm.invoke([
         {
             "role": "system",
-            "content": f"Extract the parameter and new value from the user request. Current inputs: {current_inputs}"
+            "content": prompts["command_agent"]["system"].format(current_inputs=current_inputs)
         },
         {
             "role": "user",

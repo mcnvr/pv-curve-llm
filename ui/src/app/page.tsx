@@ -371,7 +371,7 @@ export default function Home() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
               <img src="/nose-llm-logo.png" alt="Nose-LLM" className="h-8 w-8" />
-              <h1 className="text-xl font-semibold text-white">Nose-LLM</h1>
+              <h1 className="text-xl font-semibold text-white">PV Curve LLM</h1>
             </div>
             <div className="flex items-center gap-2">
         <button

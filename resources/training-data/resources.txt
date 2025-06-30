@@ -9,3 +9,4 @@ https://books.google.com/books?id=CdQnEAAAQBAJ&pg=PA32#v=onepage&q&f=false
 https://www.powerworld.com/files/D14VoltageStability.pdf\
 https://blog.oureducation.in/pv-curves-for-voltage-stability-assesment/
 https://thescipub.com/pdf/ajassp.2012.886.889.pdf
+https://voltage-disturbance.com/power-engineering/power-flow-and-voltage-stability-on-ac-transmission-lines/

@@ -1,3 +1,7 @@
+# DEPRECATED
+
+`/ai` has been replaced with `/agent`, this directory contains deprecated code
+
 # PV-Curve RAG Agent
 
 Simple local RAG-based AI agent for Power-Voltage curve analysis using DeepSeek and vector embeddings.
